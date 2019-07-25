@@ -1,0 +1,9 @@
+[submodule "sublibraries/arduinomedian"]
+	path = sublibraries/arduinomedian
+	url = git@github.com:orri93/arduinomedian.git
+[submodule "extern/arduinomock"]
+	path = extern/arduinomock
+	url = git@github.com:orri93/arduino-mock.git
+[submodule "extern/googletest"]
+	path = extern/googletest
+	url = git@github.com:orri93/googletest.git
