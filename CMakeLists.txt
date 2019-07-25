@@ -6,7 +6,12 @@ project(ArduinoUnitTesting VERSION 1.0
 
 add_subdirectory(extern)
 add_subdirectory(sublibraries)
-add_subdirectory(tests)
-add_subdirectory(src)
+
+option(PACKAGE_TESTS "Build the tests" ON)
+if(PACKAGE_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
 
 target_include_directories(arduino-mock PUBLIC include)
+
