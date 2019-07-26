@@ -4,14 +4,58 @@ project(ArduinoUnitTesting VERSION 1.0
   DESCRIPTION "FDS Arduino libraries Google unit tests"
   LANGUAGES CXX)
 
-add_subdirectory(extern)
-add_subdirectory(sublibraries)
+option(FDS_PACKAGE_TESTS "Build tests" ON)
 
-option(PACKAGE_TESTS "Build the tests" ON)
-if(PACKAGE_TESTS)
+#add_compile_definitions(ARDUINO=200)
+#add_compile_definitions(FDS_ARDUINO_UNIT_TESTING=200)
+add_compile_definitions(MEDIAN_SORT_INSERT)
+
+set(gtest_force_shared_crt ON)
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
+
+add_subdirectory(extern)
+add_subdirectory(sublibraries/arduinomedian)
+
+if(FDS_PACKAGE_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
 
-target_include_directories(arduino-mock PUBLIC include)
+mark_as_advanced(
+BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
+gmock_build_tests gtest_build_samples gtest_build_tests
+gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
+)
 
+#set_target_properties(gtest PROPERTIES FOLDER extern)
+#set_target_properties(gtest_main PROPERTIES FOLDER extern)
+#set_target_properties(gmock PROPERTIES FOLDER extern)
+#set_target_properties(gmock_main PROPERTIES FOLDER extern)
+
+include_directories(
+  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
+  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
+  ${CMAKE_SOURCE_DIR}/extern/arduinomock
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src)
+
+add_executable(ArduinoUnitTesting tests/median.cpp)
+
+target_link_libraries(ArduinoUnitTesting
+  gtest
+  gmock
+  gtest_main
+  libarduinomock
+  libarduinomedian)
+
+message(STATUS "")
+message(STATUS "BUILD SUMMARY")
+message(STATUS "  CMAKE_GENERATOR      : ${CMAKE_GENERATOR}")
+message(STATUS "  Compiler ID          : ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "  Build type           : ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Build tests          : ${FDS_PACKAGE_TESTS}")
+message(STATUS "  Force Shared CRT     : ${gtest_force_shared_crt}")
+message(STATUS "")

@@ -1,3 +1,0 @@
-project(ArduinoUnitTestingSubLibraries)
-
-add_subdirectory(arduinomedian)

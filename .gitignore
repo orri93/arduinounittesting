@@ -30,5 +30,8 @@
 *.exe
 *.out
 *.app
-/.vs
-/*.stackdump
+
+# Additionally
+.vs/
+*.stackdump
+build/
