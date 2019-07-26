@@ -1,7 +1,15 @@
+#include <cstdlib>
+#include <algorithm>
+#include <vector>
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 #include <fdsmedian.h>
+
+typedef std::vector<float> FloatVector;
+typedef FloatVector::iterator FloatVectorIterator;
+typedef FloatVector::size_type FloatVectorSize;
 
 const float A = 12.32F;
 const float B = 33.44F;
@@ -12,7 +20,36 @@ const float M1 = A;
 const float M2 = 22.879999F;
 const float M3 = 93.110001F;
 
-static float m;
+static float m, vm;
+
+namespace mu = std;
+
+static float vmedian(std::vector<float> vector) {
+  int size = vector.size();
+  if (size > 2) {
+    std::sort(vector.begin(), vector.end());
+  }
+  switch (size) {
+  case 0:
+    return NAN;
+  case 1:
+    return vector.at(0);
+  case 2:
+    return (vector.at(0) + vector.at(1)) / 2.0F;
+  case 3:
+    return vector.at(1);
+  case 4:
+    return (vector.at(1) + vector.at(2)) / 2.0F;
+  default:
+    int half = size / 2;
+    if (size % 2 == 0) {
+      return (vector.at(half) + vector.at(half - 1)) / 2.0F;
+    }
+    else {
+      return vector.at(half);
+    }
+  }
+}
 
 static void addtwo(fds::statistics::Median& median) {
   median.add(A);
@@ -24,6 +61,20 @@ static void addthree(fds::statistics::Median& median) {
   median.add(A);
   median.add(C);
 }
+
+class TestableMedian : public fds::statistics::Median {
+public:
+  uint8_t count() {
+    return count_;
+  }
+
+  void access(std::vector<float>& vector) {
+    vector.clear();
+    for (int i = 0; i < count_; i++) {
+      vector.push_back(values_[i]);
+    }
+  }
+};
 
 TEST(MedianTest, add) {
   fds::statistics::Median median;
@@ -60,4 +111,33 @@ TEST(MedianTest, clearallbutlast) {
   median.clearallbutlast();
   m = median.median();
   EXPECT_FLOAT_EQ(M3, m);
+}
+
+TEST(MedianTest, comparetoboost) {
+  TestableMedian testablemedian;
+  FloatVector values, testablemedianvalues;
+  ::srand(93);
+  FloatVectorIterator it;
+  for (int i = 0; i < 256; i++) {
+    int r = rand() % 666 + 1;
+    float f = static_cast<float>(r);
+    testablemedian.add(f);
+    values.push_back(f);
+    if (values.size() > MEDIAN_COUNT) {
+      it = values.begin();
+      values.erase(it);
+    }
+    testablemedian.access(testablemedianvalues);
+    FloatVectorSize sizea = values.size();
+    FloatVectorSize sizeb = testablemedianvalues.size();
+    ASSERT_EQ(sizea, sizeb);
+    FloatVectorSize count = std::min(sizea, sizeb);
+    for (FloatVectorSize j = 0; j < count; j++) {
+      ASSERT_EQ(values.at(j), testablemedianvalues.at(j));
+    }
+    m = testablemedian.median();
+    vm = vmedian(values);
+    std::cout << "at " << i << std::endl;
+    ASSERT_EQ(vm, m);
+  }
 }
