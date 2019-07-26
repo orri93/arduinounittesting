@@ -20,12 +20,10 @@ const float M1 = A;
 const float M2 = 22.879999F;
 const float M3 = 93.110001F;
 
-static float m, vm;
-
 namespace mu = std;
 
 static float vmedian(std::vector<float> vector) {
-  int size = vector.size();
+  int size = static_cast<int>(vector.size());
   if (size > 2) {
     std::sort(vector.begin(), vector.end());
   }
@@ -77,6 +75,7 @@ public:
 };
 
 TEST(MedianTest, add) {
+  float m;
   fds::statistics::Median median;
   addtwo(median);
   m = median.median();
@@ -84,6 +83,7 @@ TEST(MedianTest, add) {
 }
 
 TEST(MedianTest, median) {
+  float m;
   fds::statistics::Median median;
   addthree(median);
   m = median.median();
@@ -91,6 +91,7 @@ TEST(MedianTest, median) {
 }
 
 TEST(MedianTest, reset) {
+  float m;
   fds::statistics::Median median;
   addthree(median);
   m = median.median();
@@ -104,6 +105,7 @@ TEST(MedianTest, reset) {
 }
 
 TEST(MedianTest, clearallbutlast) {
+  float m;
   fds::statistics::Median median;
   addthree(median);
   m = median.median();
@@ -113,7 +115,17 @@ TEST(MedianTest, clearallbutlast) {
   EXPECT_FLOAT_EQ(M3, m);
 }
 
-TEST(MedianTest, comparetoboost) {
+static void showvector(const char* id, FloatVector& v) {
+  std::cout << id << " : ";
+  FloatVectorIterator it = v.begin();
+  while (it != v.end()) {
+    std::cout << (it != v.begin() ? ", " : "") << *it++;
+  }
+  std::cout << std::endl;
+}
+
+TEST(MedianTest, comparetosortmedian) {
+  float m, vm;
   TestableMedian testablemedian;
   FloatVector values, testablemedianvalues;
   ::srand(93);
@@ -121,6 +133,8 @@ TEST(MedianTest, comparetoboost) {
   for (int i = 0; i < 256; i++) {
     int r = rand() % 666 + 1;
     float f = static_cast<float>(r);
+    //std::cout << "at " << i << std::endl;
+    //std::cout << "adding " << f << std::endl;
     testablemedian.add(f);
     values.push_back(f);
     if (values.size() > MEDIAN_COUNT) {
@@ -132,12 +146,26 @@ TEST(MedianTest, comparetoboost) {
     FloatVectorSize sizeb = testablemedianvalues.size();
     ASSERT_EQ(sizea, sizeb);
     FloatVectorSize count = std::min(sizea, sizeb);
+    FloatVectorIterator ita = values.begin();
+    FloatVectorIterator itb = testablemedianvalues.begin();
+    //showvector("V", values);
+    //showvector("T", testablemedianvalues);
+    float suma = 0.0, sumb = 0.0;
     for (FloatVectorSize j = 0; j < count; j++) {
-      ASSERT_EQ(values.at(j), testablemedianvalues.at(j));
+      suma += *ita;
+      sumb += *itb;
+      ita++;
+      if (ita == values.end()) {
+        break;
+      }
+      itb++;
+      if (itb == testablemedianvalues.end()) {
+        break;
+      }
     }
+    ASSERT_FLOAT_EQ(suma, sumb);
     m = testablemedian.median();
     vm = vmedian(values);
-    std::cout << "at " << i << std::endl;
-    ASSERT_EQ(vm, m);
+    ASSERT_FLOAT_EQ(vm, m);
   }
 }

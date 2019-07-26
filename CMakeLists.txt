@@ -4,11 +4,20 @@ project(ArduinoUnitTesting VERSION 1.0
   DESCRIPTION "FDS Arduino libraries Google unit tests"
   LANGUAGES CXX)
 
+set(arduino_unit_testing_src
+  tests/median.cpp
+  tests/sort.cpp
+)
+
 option(FDS_PACKAGE_TESTS "Build tests" ON)
 
 #add_compile_definitions(ARDUINO=200)
 #add_compile_definitions(FDS_ARDUINO_UNIT_TESTING=200)
 #add_compile_definitions(MEDIAN_SORT_INSERT)
+add_compile_definitions(SORT_FLOATS)
+add_compile_definitions(SORT_FLOAT_REFERENCES)
+add_compile_definitions(SORT_BYTES)
+add_compile_definitions(SORT_BYTE_REFERENCES)
 
 set(gtest_force_shared_crt ON)
 
@@ -27,6 +36,7 @@ set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
 add_subdirectory(extern)
 add_subdirectory(sublibraries/arduinomedian)
+add_subdirectory(sublibraries/arduinosort)
 
 if(FDS_PACKAGE_TESTS)
   enable_testing()
@@ -39,7 +49,7 @@ gmock_build_tests gtest_build_samples gtest_build_tests
 gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
 )
 
-add_executable(ArduinoUnitTesting tests/median.cpp)
+add_executable(ArduinoUnitTesting ${arduino_unit_testing_src})
 
 #set_target_properties(gtest PROPERTIES FOLDER extern)
 #set_target_properties(gtest_main PROPERTIES FOLDER extern)
@@ -51,14 +61,16 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${CMAKE_SOURCE_DIR}/extern/arduinomock
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src)
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
 
 target_link_libraries(ArduinoUnitTesting
   gtest
   gmock
   gtest_main
   libarduinomock
-  libarduinomedian)
+  libarduinomedian
+  libarduinosort)
 
 message(STATUS "")
 message(STATUS "BUILD SUMMARY")

@@ -2,6 +2,7 @@
 
 set(test_src
   median.cpp
+  sort.cpp
 )
 
 #find_package(Boost 1.70.0 COMPONENTS boost)
@@ -19,7 +20,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
   ${CMAKE_SOURCE_DIR}/extern/arduinomock
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src)
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
 
 target_link_libraries(executegtests
   gtest
@@ -27,7 +29,8 @@ target_link_libraries(executegtests
   gtest_main
   gmock_main
   libarduinomock
-  libarduinomedian)
+  libarduinomedian
+  libarduinosort)
 
 #gtest_add_tests(TARGET tests TEST_PREFIX old:)
 #gtest_discover_tests(tests TEST_PREFIX new:)
