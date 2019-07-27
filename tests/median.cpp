@@ -145,7 +145,7 @@ TEST(MedianTest, comparetosortmedian) {
     FloatVectorSize sizea = values.size();
     FloatVectorSize sizeb = testablemedianvalues.size();
     ASSERT_EQ(sizea, sizeb);
-    FloatVectorSize count = std::min(sizea, sizeb);
+    FloatVectorSize count = min(sizea, sizeb);
     FloatVectorIterator ita = values.begin();
     FloatVectorIterator itb = testablemedianvalues.begin();
     //showvector("V", values);

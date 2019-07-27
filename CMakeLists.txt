@@ -5,6 +5,7 @@ project(ArduinoUnitTesting VERSION 1.0
   LANGUAGES CXX)
 
 set(arduino_unit_testing_src
+  tests/format.cpp
   tests/median.cpp
   tests/sort.cpp
 )
@@ -13,7 +14,7 @@ option(FDS_PACKAGE_TESTS "Build tests" ON)
 
 #add_compile_definitions(ARDUINO=200)
 #add_compile_definitions(FDS_ARDUINO_UNIT_TESTING=200)
-#add_compile_definitions(MEDIAN_SORT_INSERT)
+add_compile_definitions(GOS_ARDUINO_UNIT_TESTING)
 add_compile_definitions(SORT_FLOATS)
 add_compile_definitions(SORT_FLOAT_REFERENCES)
 add_compile_definitions(SORT_BYTES)
@@ -45,6 +46,8 @@ set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 #find_package(Boost 1.70.0 COMPONENTS boost)
 
 add_subdirectory(extern)
+add_subdirectory(src/avr-libc)
+add_subdirectory(sublibraries/arduinoformat)
 add_subdirectory(sublibraries/arduinomedian)
 add_subdirectory(sublibraries/arduinosort)
 
@@ -71,6 +74,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${CMAKE_SOURCE_DIR}/extern/arduinomock
+  ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
 
@@ -78,7 +83,9 @@ target_link_libraries(ArduinoUnitTesting
   gtest
   gmock
   gtest_main
+  libavrlibc
   libarduinomock
+  libarduinoformat
   libarduinomedian
   libarduinosort)
 

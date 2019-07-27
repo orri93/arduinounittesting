@@ -1,6 +1,7 @@
 #include(GoogleTest)
 
 set(test_src
+  format.cpp
   median.cpp
   sort.cpp
 )
@@ -20,6 +21,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
   ${CMAKE_SOURCE_DIR}/extern/arduinomock
+  ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
 
@@ -28,7 +31,9 @@ target_link_libraries(executegtests
   gmock
   gtest_main
   gmock_main
+  libavrlibc
   libarduinomock
+  libarduinoformat
   libarduinomedian
   libarduinosort)
 
