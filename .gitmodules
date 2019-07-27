@@ -13,3 +13,12 @@
 [submodule "sublibraries/arduinodebug"]
 	path = sublibraries/arduinodebug
 	url = git@github.com:orri93/arduinodebug.git
+[submodule "sublibraries/arduinoformat"]
+	path = sublibraries/arduinoformat
+	url = git@github.com:orri93/arduinoformat.git
+[submodule "sublibraries/arduinosinled"]
+	path = sublibraries/arduinosinled
+	url = git@github.com:orri93/arduinosinled.git
+[submodule "sublibraries/arduinotick"]
+	path = sublibraries/arduinotick
+	url = git@github.com:orri93/arduinotick.git
