@@ -14,3 +14,6 @@
 [submodule "sublibraries/arduinodebug"]
 	path = sublibraries/arduinodebug
 	url = git@github.com:orri93/arduinodebug.git
+[submodule "sublibraries/format"]
+	path = sublibraries/format
+	url = git@github.com:orri93/arduinoformat.git
