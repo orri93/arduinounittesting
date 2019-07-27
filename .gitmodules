@@ -7,13 +7,9 @@
 [submodule "extern/googletest"]
 	path = extern/googletest
 	url = git@github.com:orri93/googletest.git
-
 [submodule "sublibraries/arduinosort"]
 	path = sublibraries/arduinosort
 	url = git@github.com:orri93/arduinosort.git
 [submodule "sublibraries/arduinodebug"]
 	path = sublibraries/arduinodebug
 	url = git@github.com:orri93/arduinodebug.git
-[submodule "sublibraries/format"]
-	path = sublibraries/format
-	url = git@github.com:orri93/arduinoformat.git
