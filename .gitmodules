@@ -11,3 +11,6 @@
 [submodule "sublibraries/arduinosort"]
 	path = sublibraries/arduinosort
 	url = git@github.com:orri93/arduinosort.git
+[submodule "sublibraries/arduinodebug"]
+	path = sublibraries/arduinodebug
+	url = git@github.com:orri93/arduinodebug.git
