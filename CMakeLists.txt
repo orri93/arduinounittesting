@@ -8,6 +8,7 @@ set(arduino_unit_testing_src
   tests/format.cpp
   tests/median.cpp
   tests/sensor.cpp
+  tests/max31865
   tests/sort.cpp
 )
 
@@ -57,6 +58,7 @@ set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
 add_subdirectory(extern)
 add_subdirectory(src/avr-libc)
+add_subdirectory(sublibraries/arduinomax31865)
 add_subdirectory(sublibraries/arduinosensor)
 add_subdirectory(sublibraries/arduinoformat)
 add_subdirectory(sublibraries/arduinomedian)
@@ -86,6 +88,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${arduino_mock_include}
   ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
@@ -97,6 +100,7 @@ target_link_libraries(ArduinoUnitTesting
   gtest_main
   libavrlibc
   libarduinomock
+  libarduinomax31865
   libarduinosensor
   libarduinoformat
   libarduinomedian

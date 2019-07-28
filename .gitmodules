@@ -25,3 +25,6 @@
 [submodule "sublibraries/arduinosensor"]
 	path = sublibraries/arduinosensor
 	url = git@github.com:orri93/arduinosenser.git
+[submodule "sublibraries/arduinomax31865"]
+	path = sublibraries/arduinomax31865
+	url = git@github.com:orri93/arduinomax31865.git
