@@ -10,4 +10,4 @@ add_subdirectory(googletest)
 include_directories(
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include googletest/googlemock/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include googletest/googletest/include
-  ${CMAKE_SOURCE_DIR}/extern/arduinomock arduinomock)
+  ${arduino_mock_include} ${arduino_mock_for_lib_include})

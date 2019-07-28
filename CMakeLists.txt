@@ -11,8 +11,12 @@ set(arduino_unit_testing_src
   tests/sort.cpp
 )
 
-set(arduino_mock_include 
-  ${CMAKE_SOURCE_DIR}/extern/arduinomock/include/arduino-mock)
+set(arduino_mock_include
+  ${CMAKE_SOURCE_DIR}/extern/arduinomock)
+#  ${CMAKE_SOURCE_DIR}/extern/arduinomock/include/arduino-mock)
+set(arduino_mock_for_lib_include 
+  arduinomock)
+#  arduinomock/include/arduino-mock)
 
 option(FDS_PACKAGE_TESTS "Build tests" ON)
 
