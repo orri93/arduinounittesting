@@ -80,7 +80,7 @@ TEST(MedianTest, add) {
   float m;
   fds::statistics::Median median;
   addtwo(median);
-  m = median.median();
+  m = median.get();
   EXPECT_FLOAT_EQ(M2, m);
 }
 
@@ -88,7 +88,7 @@ TEST(MedianTest, median) {
   float m;
   fds::statistics::Median median;
   addthree(median);
-  m = median.median();
+  m = median.get();
   EXPECT_FLOAT_EQ(M3, m);
 }
 
@@ -96,13 +96,13 @@ TEST(MedianTest, reset) {
   float m;
   fds::statistics::Median median;
   addthree(median);
-  m = median.median();
+  m = median.get();
   EXPECT_FLOAT_EQ(M3, m);
   median.reset();
-  m = median.median();
+  m = median.get();
   EXPECT_TRUE(::isnan(m));
   median.add(C);
-  m = median.median();
+  m = median.get();
   EXPECT_FLOAT_EQ(M3, m);
 }
 
@@ -110,10 +110,10 @@ TEST(MedianTest, clearallbutlast) {
   float m;
   fds::statistics::Median median;
   addthree(median);
-  m = median.median();
+  m = median.get();
   EXPECT_FLOAT_EQ(M3, m);
   median.clearallbutlast();
-  m = median.median();
+  m = median.get();
   EXPECT_FLOAT_EQ(M3, m);
 }
 
@@ -166,7 +166,7 @@ TEST(MedianTest, comparetosortmedian) {
       }
     }
     ASSERT_FLOAT_EQ(suma, sumb);
-    m = testablemedian.median();
+    m = testablemedian.get();
     vm = vmedian(values);
     ASSERT_FLOAT_EQ(vm, m);
   }

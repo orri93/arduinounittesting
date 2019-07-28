@@ -6,7 +6,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include <arduinosort.h>
+#include <gossort.h>
 
 #define MAXIMUM_SIZE 255
 
@@ -20,10 +20,10 @@ public:
 class FloatSorter : public virtual Sorter<float> {
 public:
   void sort(float* array, const uint8_t& size) {
-    fds::sort::real::insertion(array, size);
+    ::gos::sort::real::insertion(array, size);
   }
   void sortref(const float* array, uint8_t* ref, const uint8_t& size) {
-    fds::sort::real::reference::insertion(array, ref, size);
+    ::gos::sort::real::reference::insertion(array, ref, size);
   }
 };
 
