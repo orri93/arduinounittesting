@@ -2,6 +2,7 @@
 #include <gmock/gmock.h>
 
 #include <gosmax31865.h>
+#include <arduinosensor.h>
 
 TEST(Max31865Test, error) {
   const char* error = nullptr;
