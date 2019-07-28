@@ -7,8 +7,12 @@ project(ArduinoUnitTesting VERSION 1.0
 set(arduino_unit_testing_src
   tests/format.cpp
   tests/median.cpp
+  tests/sensor.cpp
   tests/sort.cpp
 )
+
+set(arduino_mock_include 
+  ${CMAKE_SOURCE_DIR}/extern/arduinomock/include/arduino-mock)
 
 option(FDS_PACKAGE_TESTS "Build tests" ON)
 
@@ -19,6 +23,8 @@ add_compile_definitions(SORT_FLOATS)
 add_compile_definitions(SORT_FLOAT_REFERENCES)
 add_compile_definitions(SORT_BYTES)
 add_compile_definitions(SORT_BYTE_REFERENCES)
+add_compile_definitions(GOS_SENSOR_GLOBAL)
+add_compile_definitions(GOS_SENSOR_CLASS)
 
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
@@ -47,6 +53,7 @@ set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
 add_subdirectory(extern)
 add_subdirectory(src/avr-libc)
+add_subdirectory(sublibraries/arduinosensor)
 add_subdirectory(sublibraries/arduinoformat)
 add_subdirectory(sublibraries/arduinomedian)
 add_subdirectory(sublibraries/arduinosort)
@@ -73,8 +80,9 @@ include_directories(
 #  ${Boost_INCLUDE_DIRS}
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
-  ${CMAKE_SOURCE_DIR}/extern/arduinomock
+  ${arduino_mock_include}
   ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
@@ -85,6 +93,7 @@ target_link_libraries(ArduinoUnitTesting
   gtest_main
   libavrlibc
   libarduinomock
+  libarduinosensor
   libarduinoformat
   libarduinomedian
   libarduinosort)

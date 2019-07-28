@@ -22,3 +22,6 @@
 [submodule "sublibraries/arduinotick"]
 	path = sublibraries/arduinotick
 	url = git@github.com:orri93/arduinotick.git
+[submodule "sublibraries/arduinosensor"]
+	path = sublibraries/arduinosensor
+	url = git@github.com:orri93/arduinosenser.git
