@@ -29,7 +29,6 @@ TEST(SensorTest, error) {
   EXPECT_EQ(3, length);
 }
 
-#ifdef GOS_SENSOR_GLOBAL
 TEST(SensorTest, global) {
   uint8_t checkresult;
   double reading = 0.0;
@@ -47,4 +46,3 @@ TEST(SensorTest, global) {
   EXPECT_EQ(GOS_SENSOR_STATUS_ABOVE_MAXIMUM, checkresult);
   EXPECT_DOUBLE_EQ(::gos::sensor::range::Maximum, reading);
 }
-#endif

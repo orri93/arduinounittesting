@@ -28,3 +28,6 @@
 [submodule "sublibraries/arduinomax31865"]
 	path = sublibraries/arduinomax31865
 	url = git@github.com:orri93/arduinomax31865.git
+[submodule "sublibraries/arduinomax6675"]
+	path = sublibraries/arduinomax6675
+	url = git@github.com:orri93/arduinomax6675.git

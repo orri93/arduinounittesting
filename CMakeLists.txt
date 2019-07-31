@@ -9,6 +9,7 @@ set(arduino_unit_testing_src
   tests/median.cpp
   tests/sensor.cpp
   tests/max31865
+  tests/max6675
   tests/sort.cpp
 )
 
@@ -24,12 +25,6 @@ option(FDS_PACKAGE_TESTS "Build tests" ON)
 #add_compile_definitions(ARDUINO=200)
 #add_compile_definitions(FDS_ARDUINO_UNIT_TESTING=200)
 add_compile_definitions(GOS_ARDUINO_UNIT_TESTING)
-add_compile_definitions(SORT_FLOATS)
-add_compile_definitions(SORT_FLOAT_REFERENCES)
-add_compile_definitions(SORT_BYTES)
-add_compile_definitions(SORT_BYTE_REFERENCES)
-add_compile_definitions(GOS_SENSOR_GLOBAL)
-add_compile_definitions(GOS_SENSOR_CLASS)
 
 find_package(Git QUIET)
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
@@ -57,7 +52,9 @@ set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 #find_package(Boost 1.70.0 COMPONENTS boost)
 
 add_subdirectory(extern)
+add_subdirectory(src/mock)
 add_subdirectory(src/avr-libc)
+add_subdirectory(sublibraries/arduinomax6675)
 add_subdirectory(sublibraries/arduinomax31865)
 add_subdirectory(sublibraries/arduinosensor)
 add_subdirectory(sublibraries/arduinoformat)
@@ -87,7 +84,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${arduino_mock_include}
+  ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
@@ -98,8 +97,10 @@ target_link_libraries(ArduinoUnitTesting
   gtest
   gmock
   gtest_main
+  libmock
   libavrlibc
   libarduinomock
+  libarduinomax6675
   libarduinomax31865
   libarduinosensor
   libarduinoformat

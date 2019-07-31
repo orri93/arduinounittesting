@@ -5,6 +5,7 @@ set(test_src
   median.cpp
   sensor.cpp
   max31865.cpp
+  max6675.cpp
   sort.cpp
 )
 
@@ -23,7 +24,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
   ${arduino_mock_include}
+  ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
@@ -35,8 +38,10 @@ target_link_libraries(executegtests
   gmock
   gtest_main
   gmock_main
+  libmock
   libavrlibc
   libarduinomock
+  libarduinomax6675
   libarduinomax31865
   libarduinosensor
   libarduinoformat
