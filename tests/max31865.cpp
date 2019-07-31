@@ -1,10 +1,16 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include <Arduino.h>
+#include <SPI.h>
+
 #include <gosmax31865.h>
 #include <arduinosensor.h>
 
 TEST(Max31865Test, error) {
+  ArduinoMock* arduinomock = arduinoMockInstance();
+  SpiMock* spimock = spiMockInstance();
+
   const char* error = nullptr;
   uint8_t length;
   double value;
@@ -16,4 +22,6 @@ TEST(Max31865Test, error) {
   EXPECT_TRUE(error == nullptr);
   EXPECT_EQ(0, length);
 
+  releaseSpiMock();
+  releaseArduinoMock();
 }

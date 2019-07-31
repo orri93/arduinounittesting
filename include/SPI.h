@@ -67,6 +67,8 @@ class SPISettings {
 public:
   SPISettings(uint32_t clock, uint8_t bitOrder, uint8_t dataMode);
   SPISettings();
+
+  bool operator==(const SPISettings& rhs) const;
 private:
   void init(uint32_t clock, uint8_t bitOrder, uint8_t dataMode);
   uint32_t clock_;

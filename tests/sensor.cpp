@@ -32,8 +32,8 @@ TEST(SensorTest, error) {
 TEST(SensorTest, global) {
   uint8_t checkresult;
   double reading = 0.0;
-  ::gos::sensor::range::Minimum = 10.0;
-  ::gos::sensor::range::Maximum = 20.0;
+  ::gos::sensor::range::Minimum = -10.0;
+  ::gos::sensor::range::Maximum =  20.0;
   checkresult = ::gos::sensor::range::check(reading);
   EXPECT_EQ(GOS_SENSOR_STATUS_OK, checkresult);
   EXPECT_DOUBLE_EQ(0.0, reading);

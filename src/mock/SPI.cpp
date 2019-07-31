@@ -8,6 +8,10 @@ SPISettings::SPISettings(uint32_t clock, uint8_t bitOrder, uint8_t dataMode) {
   init(clock, bitOrder, dataMode);
 }
 
+bool SPISettings::operator==(const SPISettings& rhs) const {
+  return clock_ == rhs.clock_ && bitOrder_ == rhs.bitOrder_ && dataMode_ == rhs.dataMode_;
+}
+
 void SPISettings::init(uint32_t clock, uint8_t bitOrder, uint8_t dataMode) {
   clock_ = clock;
   bitOrder_ = bitOrder;
