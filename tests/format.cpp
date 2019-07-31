@@ -33,6 +33,16 @@ TEST(testarduinoformat, number) {
   fds::format::free();
 }
 
+TEST(testarduinoformat, numberonline) {
+  char* pointer = nullptr;
+  fds::format::setup();
+  fds::format::set('\0', "C", 2, 9, 6, 1);
+  fds::format::number(32.89);
+  pointer = fds::format::get(0);
+  ASSERT_STREQ("  32.9 C", pointer);
+  fds::format::free();
+}
+
 TEST(testarduinoformat, oldmain) {
   char* pointer = nullptr;
   fds::format::setup();
