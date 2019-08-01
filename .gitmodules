@@ -31,3 +31,6 @@
 [submodule "sublibraries/arduinomax6675"]
 	path = sublibraries/arduinomax6675
 	url = git@github.com:orri93/arduinomax6675.git
+[submodule "extern/libraries/PWFusion_MAX31865"]
+	path = extern/libraries/PWFusion_MAX31865
+	url = git@github.com:orri93/PWFusion_MAX31865.git

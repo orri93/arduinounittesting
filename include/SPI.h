@@ -4,9 +4,13 @@
 #ifndef SPI_H
 #define SPI_H
 
+#include <queue>
+
 #include <Arduino.h>
 
 #include <gmock/gmock.h>
+
+#include <gos/utils/wordq.h>
 
  // SPI_HAS_TRANSACTION means SPI has beginTransaction(), endTransaction(),
  // usingInterrupt(), and SPISetting(clock, bitOrder, dataMode)
@@ -66,6 +70,7 @@ class SpiMock;
 class SPISettings {
 public:
   SPISettings(uint32_t clock, uint8_t bitOrder, uint8_t dataMode);
+  SPISettings(const SPISettings& settings);
   SPISettings();
 
   bool operator==(const SPISettings& rhs) const;
@@ -79,6 +84,8 @@ private:
 
 class SpiMock {
 public:
+  typedef std::queue<SPISettings> QueueSettings;
+
   // Initialize the SPI library
   //static void begin();
   MOCK_METHOD0(begin, void());
@@ -106,19 +113,22 @@ public:
   // this function is used to gain exclusive access to the SPI bus
   // and configure the correct settings.
   // inline static void beginTransaction(SPISettings settings)
-  MOCK_METHOD1(beginTransaction, void(SPISettings settings));
+  //MOCK_METHOD1(beginTransaction, void(SPISettings settings));
+  void beginTransaction(SPISettings settings);
 
   //inline static uint8_t transfer(uint8_t data);
-  MOCK_METHOD1(transfer, uint8_t(uint8_t data));
+  uint8_t transfer(uint8_t data);
 
   //inline static uint16_t transfer16(uint16_t data);
-  MOCK_METHOD1(transfer16, uint16_t(uint16_t data));
+  uint16_t transfer16(uint16_t data);
 
   //inline static void transfer(void *buf, size_t count);
-  MOCK_METHOD2(transfer, void(void *buf, size_t count));
+  //MOCK_METHOD2(transfer, void(void *buf, size_t count));
+  void transfer(void *buf, size_t count);
 
   //inline static void endTransaction(void);
-  MOCK_METHOD0(endTransaction, void(void));
+  //MOCK_METHOD0(endTransaction, void(void));
+  void endTransaction(void);
 
   // Disable the SPI bus
   //static void end();
@@ -146,6 +156,10 @@ public:
   //inline static void detachInterrupt();
   MOCK_METHOD0(attachInterrupt, void(void));
   MOCK_METHOD0(detachInterrupt, void(void));
+
+  ::gos::arduino::testing::utils::WordQueue In;
+  ::gos::arduino::testing::utils::WordQueue Out;
+  QueueSettings TransactionQueue;
 };
 
 class Spi_ {

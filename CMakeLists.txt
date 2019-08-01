@@ -5,12 +5,12 @@ project(ArduinoUnitTesting VERSION 1.0
   LANGUAGES CXX)
 
 set(arduino_unit_testing_src
-  tests/format.cpp
-  tests/median.cpp
-  tests/sensor.cpp
-  tests/max31865
-  tests/max6675
-  tests/sort.cpp
+  ${CMAKE_SOURCE_DIR}/tests/format.cpp
+  ${CMAKE_SOURCE_DIR}/tests/median.cpp
+  ${CMAKE_SOURCE_DIR}/tests/sensor.cpp
+  ${CMAKE_SOURCE_DIR}/tests/max31865
+  ${CMAKE_SOURCE_DIR}/tests/max6675
+  ${CMAKE_SOURCE_DIR}/tests/sort.cpp
 )
 
 set(arduino_mock_include
@@ -19,6 +19,36 @@ set(arduino_mock_include
 set(arduino_mock_for_lib_include 
   arduinomock)
 #  arduinomock/include/arduino-mock)
+set(arduino_testing_include
+#  ${Boost_INCLUDE_DIRS}
+  ${arduino_mock_include}
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
+  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
+  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
+  ${CMAKE_SOURCE_DIR}/extern/libraries/PWFusion_MAX31865
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
+
+set(arduino_testing_target_link_libraries
+  gtest
+  gmock
+  gtest_main
+  libmock
+  libavrlibc
+  libgosutils
+  libarduinomock
+  libarduinomax6675
+  libarduinomax31865
+  libarduinosensor
+  libarduinoformat
+  libarduinomedian
+  libarduinosort
+  libarduinoextern)
 
 option(FDS_PACKAGE_TESTS "Build tests" ON)
 
@@ -53,6 +83,7 @@ set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
 add_subdirectory(extern)
 add_subdirectory(src/mock)
+add_subdirectory(src/utils)
 add_subdirectory(src/avr-libc)
 add_subdirectory(sublibraries/arduinomax6675)
 add_subdirectory(sublibraries/arduinomax31865)
@@ -60,6 +91,7 @@ add_subdirectory(sublibraries/arduinosensor)
 add_subdirectory(sublibraries/arduinoformat)
 add_subdirectory(sublibraries/arduinomedian)
 add_subdirectory(sublibraries/arduinosort)
+add_subdirectory(extern/libraries)
 
 if(FDS_PACKAGE_TESTS)
   enable_testing()
@@ -79,33 +111,10 @@ add_executable(ArduinoUnitTesting ${arduino_unit_testing_src})
 #set_target_properties(gmock PROPERTIES FOLDER extern)
 #set_target_properties(gmock_main PROPERTIES FOLDER extern)
 
-include_directories(
-#  ${Boost_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
-  ${arduino_mock_include}
-  ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
+include_directories(${arduino_testing_include})
 
 target_link_libraries(ArduinoUnitTesting
-  gtest
-  gmock
-  gtest_main
-  libmock
-  libavrlibc
-  libarduinomock
-  libarduinomax6675
-  libarduinomax31865
-  libarduinosensor
-  libarduinoformat
-  libarduinomedian
-  libarduinosort)
+  ${arduino_testing_target_link_libraries})
 
 message(STATUS "")
 message(STATUS "BUILD SUMMARY")

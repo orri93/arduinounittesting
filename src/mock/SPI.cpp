@@ -1,11 +1,17 @@
 #include <SPI.h>
 
+#include <iostream>
+
 SPISettings::SPISettings() {
   init(4000000, MSBFIRST, SPI_MODE0);
 }
 
 SPISettings::SPISettings(uint32_t clock, uint8_t bitOrder, uint8_t dataMode) {
   init(clock, bitOrder, dataMode);
+}
+
+SPISettings::SPISettings(const SPISettings& settings) {
+  init(settings.clock_, settings.bitOrder_, settings.dataMode_);
 }
 
 bool SPISettings::operator==(const SPISettings& rhs) const {
@@ -87,10 +93,49 @@ void SPISettings::init(uint32_t clock, uint8_t bitOrder, uint8_t dataMode) {
   */
 }
 
+uint8_t SpiMock::transfer(uint8_t data) {
+  uint8_t result = 0x00;
+  In.pushbyte(data);
+  if (Out.bytes() > 0) {
+    Out.popbyte(result);
+  }
+  return result;
+}
+
+uint16_t SpiMock::transfer16(uint16_t data) {
+  uint16_t result = 0x0000;
+  In.pushword(data);
+  if (Out.bytes() > 1) {
+    Out.popword(result);
+  }
+  return result;
+}
+
+void SpiMock::transfer(void *buf, size_t count) {
+  In.pushbytes(static_cast<uint8_t*>(buf), count);
+}
+
+void SpiMock::beginTransaction(SPISettings settings) {
+  if (!TransactionQueue.empty()) {
+    std::cout << "Warning: Starting multiple SPI Transactions" << std::endl;
+  }
+  TransactionQueue.push(settings);
+}
+
+void SpiMock::endTransaction() {
+  if (!TransactionQueue.empty()) {
+    TransactionQueue.pop();
+  } else {
+    std::cout << "Warning: Ending SPI Transaction without beginning one" << std::endl;
+  }
+}
+
 static SpiMock* gSpiMock = nullptr;
 SpiMock* spiMockInstance() {
   if (!gSpiMock) {
     gSpiMock = new SpiMock();
+  } else {
+    std::cout << "Warning: SPI Mock Instance requested multiple times" << std::endl;
   }
   return gSpiMock;
 }
@@ -99,6 +144,8 @@ void releaseSpiMock() {
   if (gSpiMock) {
     delete gSpiMock;
     gSpiMock = nullptr;
+  } else {
+    std::cout << "Warning: Trying to release undefined SPI Mock Instance" << std::endl;
   }
 }
 
