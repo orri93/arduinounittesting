@@ -231,17 +231,17 @@ TEST_F(Max31865Test, calculation) {
   double pwfres, gosres, pwfcelsius, goscelsius;
 
   type = RTD_TYPE_PT100;
-  for (uint16_t i = 1; i <= 0xffff; i *= 2) {
-    pwfcelsius = PlayingWithFusion(pwfres, i, type);
-    goscelsius = GosMax31865(gosres, i, type);
+  for (uint16_t raw = 1; raw <= 0x0fff; raw += 8) {
+    pwfcelsius = PlayingWithFusion(pwfres, raw, type);
+    goscelsius = GosMax31865(gosres, raw, type);
     EXPECT_DOUBLE_EQ(pwfcelsius, goscelsius);
     EXPECT_DOUBLE_EQ(pwfres, gosres);
   }
   
   type = RTD_TYPE_PT1000;
-  for (uint16_t i = 1; i <= 0xffff; i *= 2) {
-    pwfcelsius = PlayingWithFusion(pwfres, i, type);
-    goscelsius = GosMax31865(gosres, i, type);
+  for (uint16_t raw = 1; raw <= 0x0fff; raw += 8) {
+    pwfcelsius = PlayingWithFusion(pwfres, raw, type);
+    goscelsius = GosMax31865(gosres, raw, type);
     EXPECT_DOUBLE_EQ(pwfcelsius, goscelsius);
     EXPECT_DOUBLE_EQ(pwfres, gosres);
   }
