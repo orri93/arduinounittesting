@@ -5,6 +5,7 @@ project(ArduinoUnitTesting VERSION 1.0
   LANGUAGES CXX)
 
 set(arduino_unit_testing_src
+  ${CMAKE_SOURCE_DIR}/tests/arduinotemplates.cpp
   ${CMAKE_SOURCE_DIR}/tests/format.cpp
   ${CMAKE_SOURCE_DIR}/tests/median.cpp
   ${CMAKE_SOURCE_DIR}/tests/sensor.cpp
@@ -27,6 +28,8 @@ set(arduino_testing_include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
   ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${CMAKE_SOURCE_DIR}/extern/libraries/PWFusion_MAX31865
+  ${CMAKE_SOURCE_DIR}/extern/libraries/MCP3208
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinotemplates/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
@@ -37,7 +40,7 @@ set(arduino_testing_include
 set(arduino_testing_target_link_libraries
   gtest
   gmock
-  gtest_main
+  gmock_main
   libmock
   libavrlibc
   libgosutils

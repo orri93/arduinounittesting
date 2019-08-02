@@ -34,3 +34,12 @@
 [submodule "extern/libraries/PWFusion_MAX31865"]
 	path = extern/libraries/PWFusion_MAX31865
 	url = git@github.com:orri93/PWFusion_MAX31865.git
+[submodule "sublibraries/arduinomcp3208"]
+	path = sublibraries/arduinomcp3208
+	url = git@github.com:orri93/arduinomcp3208.git
+[submodule "extern/libraries/MCP3208"]
+	path = extern/libraries/MCP3208
+	url = git@github.com:orri93/MCP3208.git
+[submodule "sublibraries/arduinotemplates"]
+	path = sublibraries/arduinotemplates
+	url = git@github.com:orri93/arduinotemplates.git
