@@ -1,98 +1,35 @@
 #include <vector>
-#include <algorithm>
+#include <numeric>
+#include <mutex>
 
 #include <Arduino.h>
 
+#include <gos/utils/random.h>
+#include <gos/utils/statistics.h>
+#include <gos/utils/expect.h>
+
 #include <gos/atl/sort.h>
 #include <gos/atl/median.h>
+#include <gos/atl/avrage.h>
 
-template<typename T>
-void generate(
-  std::vector<T>& vector,
-  T* array,
-  const size_t& count,
-  const long& mininum,
-  const long& maximum,
-  const unsigned long& seed = 11ul) {
-  randomSeed(seed);
-  for (size_t i = 0; i < count; i++) {
-    long r = random(mininum, maximum);
-    vector.push_back(static_cast<T>(r));
-    array[i] = static_cast<T>(r);
-  }
-}
-
-template<typename T>
-void generate(
-  std::vector<T>& vector,
-  ::gos::atl::Median<T>& median,
-  const size_t& count,
-  const long& mininum,
-  const long& maximum,
-  const unsigned long& seed = 11ul) {
-  randomSeed(seed);
-  for (size_t i = 0; i < count; i++) {
-    long r = random(mininum, maximum);
-    vector.push_back(static_cast<T>(r));
-    median.add(static_cast<T>(r));
-  }
-}
-
-template<typename T>
-void expecteq(
-  std::vector<T>& vector,
-  T* array,
-  const size_t& count) {
-  size_t i;
-  EXPECT_EQ(count, vector.size());
-  std::vector<T>::iterator it = vector.begin();
-  for (size_t i = 0; i < count && it != vector.end(); i++) {
-    EXPECT_EQ(array[i], *(it++));
-  }
-  EXPECT_EQ(i, count);
-  EXPECT_EQ(it, vector.end());
-}
-void expectfloateq(
-  std::vector<float>& vector,
-  float* array,
-  const size_t& count) {
-  size_t i;
-  EXPECT_EQ(count, vector.size());
-  std::vector<float>::iterator it = vector.begin();
-  for (size_t i = 0; i < count && it != vector.end(); i++) {
-    EXPECT_FLOAT_EQ(array[i], *(it++));
-  }
-  EXPECT_EQ(i, count);
-  EXPECT_EQ(it, vector.end());
-}
-void expectfloateq(
-  std::vector<float>& vector,
-  float* array,
-  const uint16_t* reference,
-  const size_t& count) {
-  size_t i;
-  EXPECT_EQ(count, vector.size());
-  std::vector<float>::iterator it = vector.begin();
-  for (size_t i = 0; i < count && it != vector.end(); i++) {
-    EXPECT_FLOAT_EQ(array[reference[i]], *(it++));
-  }
-  EXPECT_EQ(i, count);
-  EXPECT_EQ(it, vector.end());
-}
+namespace gatl = ::gos::atl;
+namespace gatu = ::gos::arduino::testing::utils;
 
 typedef std::vector<float> FloatVector;
 typedef std::vector<double> DoubleVector;
 typedef std::vector<uint16_t> WordVector;
 
+std::mutex mutext;
+
 TEST(ArduinoTemplateTest, Sort) {
   const size_t count = 256;
   FloatVector fv;
   float fa[count];
-  generate<float>(fv, fa, count, 0, 1024);
-  expectfloateq(fv, fa, count);
-  ::gos::atl::sort::insertion<float>(fa, count);
+  gatu::random::generate<float>(fv, fa, count, 0, 1024);
+  gatu::expect::floateq(fv, fa, count);
+  gatl::sort::insertion<float>(fa, count);
   std::sort(fv.begin(), fv.end());
-  expectfloateq(fv, fa, count);
+  gatu::expect::floateq(fv, fa, count);
   for (size_t i = 1; i < count; i++) {
     EXPECT_TRUE(fa[i - 1] <= fa[i]);
   }
@@ -102,29 +39,85 @@ TEST(ArduinoTemplateTest, ReferenceSort) {
   const size_t count = 256;
   FloatVector fv;
   float fa[count];
-  generate<float>(fv, fa, count, 0, 1024);
-  expectfloateq(fv, fa, count);
+  gatu::random::generate<float>(fv, fa, count, 0, 1024);
+  gatu::expect::floateq(fv, fa, count);
   uint16_t reference[count];
   for (size_t i = 0; i < count; i++) {
     reference[i] = static_cast<uint16_t>(i);
   }
-  ::gos::atl::sort::insertion<float, uint16_t>(fa, reference, count);
+  gatl::sort::insertion<float, uint16_t>(fa, reference, count);
   std::sort(fv.begin(), fv.end());
-  expectfloateq(fv, fa, reference, count);
+  gatu::expect::floateq(fv, fa, reference, count);
 }
 
 TEST(ArduinoTemplateTest, Median) {
   const size_t count = 256;
   DoubleVector dv;
-  ::gos::atl::Median<double> median(NAN);
-  generate<double>(dv, median, count, 0, 1024);
+  gatl::statistics::Set<double, uint16_t> set(NAN, count);
+  gatl::statistics::Median<double, uint16_t> median(set);
+  gatu::random::generate<double, uint16_t>(dv, set, count, 0, 1024);
   std::sort(dv.begin(), dv.end());
   double calculated, medianvalue;
-  if (dv.size() % 2) {
-    calculated = dv.at(dv.size() / 2);
-  } else {
-    calculated = (dv.at(dv.size() / 2) + dv.at(-1 + dv.size() / 2)) / 2.0;
-  }
+  calculated = gatu::statistics::median(dv);
   medianvalue = median.get();
   EXPECT_DOUBLE_EQ(calculated, medianvalue);
+  median.cleanup();
+}
+
+TEST(ArduinoTemplateTest, RunningMedian) {
+  mutext.lock();
+  const size_t size = 16;
+  const size_t count = 256;
+  DoubleVector dv;
+  gatu::statistics::running::vector<double, uint16_t> rv(size, dv);
+  gatl::statistics::Set<double, uint16_t> set(NAN, size);
+  gatl::statistics::Median<double, uint16_t> median(set);
+  randomSeed(93);
+  for (size_t i = 0; i < count; i++) {
+    double r = gatu::random::generate<double>(0, 1024);
+    rv.add(r);
+    set.add(r);
+    gatu::expect::doubleeq(dv, set);
+    double calculated = gatu::statistics::median(dv);
+    double medianvalue = median.get();
+    EXPECT_DOUBLE_EQ(calculated, medianvalue);
+  }
+  median.cleanup();
+  mutext.unlock();
+}
+
+TEST(ArduinoTemplateTest, Avrage) {
+  const size_t count = 256;
+  DoubleVector dv;
+  gatl::statistics::Set<double, uint16_t> set(NAN, count);
+  gatl::statistics::Avrage<double, uint16_t> avrage(set);
+  gatu::random::generate<double, uint16_t>(dv, avrage, count, 0, 1024);
+  std::sort(dv.begin(), dv.end());
+  double calculated, avragevalue;
+  calculated = std::accumulate(dv.begin(), dv.end(), 0.0) / set.Count;
+  avragevalue = avrage.get();
+  EXPECT_DOUBLE_EQ(calculated, avragevalue);
+  set.cleanup();
+}
+
+TEST(ArduinoTemplateTest, RunningAvrage) {
+  mutext.lock();
+  const size_t size = 16;
+  const size_t count = 256;
+  DoubleVector dv;
+  gatu::statistics::running::vector<double, uint16_t> rv(size, dv);
+  gatl::statistics::Set<double, uint16_t> set(NAN, size);
+  gatl::statistics::Avrage<double, uint16_t> avrage(set);
+  randomSeed(93);
+  for (size_t i = 0; i < count; i++) {
+    double r = gatu::random::generate<double>(0, 1024);
+    rv.add(r);
+    avrage.add(r);
+    gatu::expect::doubleeq(dv, set);
+    double calculated = std::accumulate(dv.begin(), dv.end(), 0.0) / set.Count;
+    double avragevalue = avrage.get();
+    EXPECT_DOUBLE_EQ(calculated, avragevalue);
+  }
+  set.cleanup();
+  mutext.unlock();
 }
