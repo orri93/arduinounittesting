@@ -3,8 +3,8 @@
 
 #include <Arduino.h>
 
-#include <gos/atl/median.h>
-#include <gos/atl/avrage.h>
+#include <gatlmedian.h>
+#include <gatlavrage.h>
 
 namespace gos {
 namespace arduino {

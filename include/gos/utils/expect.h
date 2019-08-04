@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#include <gos/atl/statistics.h>
+#include <gatlstatistics.h>
 
 namespace gos {
 namespace arduino {

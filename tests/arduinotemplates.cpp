@@ -8,10 +8,10 @@
 #include <gos/utils/statistics.h>
 #include <gos/utils/expect.h>
 
-#include <gos/atl/sort.h>
-#include <gos/atl/median.h>
-#include <gos/atl/avrage.h>
-#include <gos/atl/format.h>
+#include <gatlsort.h>
+#include <gatlmedian.h>
+#include <gatlavrage.h>
+#include <gatlformat.h>
 
 namespace gatl = ::gos::atl;
 namespace gatu = ::gos::arduino::testing::utils;
