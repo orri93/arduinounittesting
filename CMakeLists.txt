@@ -36,6 +36,7 @@ set(arduino_testing_include
   ${CMAKE_SOURCE_DIR}/extern/libraries/PWFusion_MAX31865
   ${CMAKE_SOURCE_DIR}/extern/libraries/MCP3208
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinotemplates/src
+  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomcp3208/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
@@ -54,6 +55,7 @@ set(arduino_testing_target_link_libraries
   libavrlibc
   libgosutils
   libarduinomock
+  libarduinomcp3208
   libarduinomax6675
   libarduinomax31865
   libarduinosensor
@@ -99,6 +101,7 @@ add_subdirectory(extern)
 add_subdirectory(src/mock)
 add_subdirectory(src/utils)
 add_subdirectory(src/avr-libc)
+add_subdirectory(sublibraries/arduinomcp3208)
 add_subdirectory(sublibraries/arduinomax6675)
 add_subdirectory(sublibraries/arduinomax31865)
 add_subdirectory(sublibraries/arduinosensor)
