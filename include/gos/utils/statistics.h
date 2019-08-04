@@ -23,7 +23,7 @@ template<typename T> T median(const std::vector<T>& vector) {
     }
     else {
       return (copy.at(copy.size() / 2) +
-        copy.at(-1 + copy.size() / 2)) / 2.0;
+        copy.at(-1 + copy.size() / 2)) / T(2);
     }
   }
   return T();

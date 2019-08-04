@@ -19,6 +19,7 @@ namespace gatu = ::gos::arduino::testing::utils;
 typedef std::vector<float> FloatVector;
 typedef std::vector<double> DoubleVector;
 typedef std::vector<uint16_t> WordVector;
+typedef std::vector<uint32_t> DoubleWordVector;
 
 std::mutex mutext;
 
@@ -69,6 +70,7 @@ TEST(ArduinoTemplateTest, RunningMedian) {
   mutext.lock();
   const size_t size = 16;
   const size_t count = 256;
+  
   DoubleVector dv;
   gatu::statistics::running::vector<double, uint16_t> rv(size, dv);
   gatl::statistics::Set<double, uint16_t> set(NAN, size);
@@ -84,6 +86,21 @@ TEST(ArduinoTemplateTest, RunningMedian) {
     EXPECT_DOUBLE_EQ(calculated, medianvalue);
   }
   median.cleanup();
+
+  DoubleWordVector dwv;
+  gatu::statistics::running::vector<uint32_t, uint8_t> rdwv(size, dwv);
+  gatl::statistics::Set<uint32_t, uint8_t> dwset(0xffffffff, size);
+  gatl::statistics::Median<uint32_t, uint8_t> dwmedian(dwset);
+  for (size_t i = 0; i < count; i++) {
+    uint32_t dwr = gatu::random::generate<uint32_t>(0, 1024);
+    rdwv.add(dwr);
+    dwset.add(dwr);
+    gatu::expect::eq<uint32_t>(dwv, dwset);
+    uint32_t dwcalculated = gatu::statistics::median(dwv);
+    uint32_t dwmedianvalue = dwmedian.get();
+    EXPECT_EQ(dwcalculated, dwmedianvalue);
+  }
+
   mutext.unlock();
 }
 

@@ -28,15 +28,32 @@ void eq(
   EXPECT_EQ(it, vector.end());
 }
 
+template<typename T, typename I>
+void eq(
+  std::vector<T>& vector,
+  const ::gos::atl::statistics::Set<T, I>& set) {
+  I i;
+  EXPECT_EQ(set.Count, vector.size());
+  std::vector<T>::const_iterator it = vector.cbegin();
+  for (i = 0; it != vector.cend() && i < set.Count; i++) {
+    EXPECT_EQ(*(it++), set.Values[i]);
+  }
+  EXPECT_EQ(i, vector.size());
+  EXPECT_EQ(it, vector.end());
+}
+
 template<typename I>
 void doubleeq(
   const std::vector<double>& vector,
   const ::gos::atl::statistics::Set<double, I>& set) {
+  I i;
   EXPECT_EQ(set.Count, vector.size());
   std::vector<double>::const_iterator it = vector.cbegin();
-  for (I i = 0; it != vector.cend() && i < set.Count; i++) {
+  for (i = 0; it != vector.cend() && i < set.Count; i++) {
     EXPECT_EQ(*(it++), set.Values[i]);
   }
+  EXPECT_EQ(i, vector.size());
+  EXPECT_EQ(it, vector.end());
 }
 
 void floateq(
