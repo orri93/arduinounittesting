@@ -16,8 +16,5 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
 include_directories(
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include 
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
-  ${CMAKE_SOURCE_DIR}/extern/libraries/MCP3208
   ${arduino_mock_include}
-  ${CMAKE_SOURCE_DIR}/include)
+  ${CMAKE_SOURCE_DIR}/extern/libraries/MCP3208)

@@ -28,8 +28,8 @@
 
 /* $Id$ */
 
-#include "ftoa_engine.h"
-#include "dtoa_conv.h"
+#include <ftoa_engine.h>
+#include <dtoa_conv.h>
 //#include "sectionname.h"
 
 int

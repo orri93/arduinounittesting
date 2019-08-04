@@ -11,22 +11,28 @@ set(arduino_unit_testing_src
   ${CMAKE_SOURCE_DIR}/tests/sensor.cpp
   ${CMAKE_SOURCE_DIR}/tests/max31865
   ${CMAKE_SOURCE_DIR}/tests/max6675
-  ${CMAKE_SOURCE_DIR}/tests/sort.cpp
-)
+  ${CMAKE_SOURCE_DIR}/tests/sort.cpp)
 
 set(arduino_mock_include
-  ${CMAKE_SOURCE_DIR}/extern/arduinomock)
-#  ${CMAKE_SOURCE_DIR}/extern/arduinomock/include/arduino-mock)
+  ${CMAKE_SOURCE_DIR}/include
+  ${CMAKE_SOURCE_DIR}/include/avr
+  ${CMAKE_SOURCE_DIR}/extern/arduinomock
+#  ${CMAKE_SOURCE_DIR}/extern/arduinomock/include/arduino-mock
+  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include googletest/googlemock/include
+  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include googletest/googletest/include
+  )
 set(arduino_mock_for_lib_include 
-  arduinomock)
-#  arduinomock/include/arduino-mock)
+  arduinomock
+#  arduinomock/include/arduino-mock
+  ${CMAKE_SOURCE_DIR}/extern/arduinomock
+  ${CMAKE_SOURCE_DIR}/include/avr
+  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include googletest/googlemock/include
+  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include googletest/googletest/include)
+
 set(arduino_testing_include
 #  ${Boost_INCLUDE_DIRS}
   ${arduino_mock_include}
-  ${CMAKE_SOURCE_DIR}/include
   ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include
   ${CMAKE_SOURCE_DIR}/extern/libraries/PWFusion_MAX31865
   ${CMAKE_SOURCE_DIR}/extern/libraries/MCP3208
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinotemplates/src
@@ -36,6 +42,9 @@ set(arduino_testing_include
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
   ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
+
+set(sublibraries_include
+  ${arduino_mock_include})
 
 set(arduino_testing_target_link_libraries
   gtest
@@ -57,6 +66,8 @@ option(FDS_PACKAGE_TESTS "Build tests" ON)
 
 #add_compile_definitions(ARDUINO=200)
 #add_compile_definitions(FDS_ARDUINO_UNIT_TESTING=200)
+add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CHECK_SIZE)
+add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CLEANUP)
 add_compile_definitions(GOS_ARDUINO_UNIT_TESTING)
 
 find_package(Git QUIET)
