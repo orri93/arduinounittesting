@@ -5,47 +5,47 @@ project(ArduinoUnitTesting VERSION 1.0
   LANGUAGES CXX)
 
 set(arduino_unit_testing_src
-  ${CMAKE_SOURCE_DIR}/tests/arduinotemplates.cpp
-  ${CMAKE_SOURCE_DIR}/tests/format.cpp
-  ${CMAKE_SOURCE_DIR}/tests/median.cpp
-  ${CMAKE_SOURCE_DIR}/tests/sensor.cpp
-  ${CMAKE_SOURCE_DIR}/tests/max31865
-  ${CMAKE_SOURCE_DIR}/tests/max6675
-  ${CMAKE_SOURCE_DIR}/tests/sort.cpp)
+  "${CMAKE_SOURCE_DIR}/tests/gatl/pid.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/gatl/sort.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/gatl/avrage.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/gatl/median.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/gatl/format.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/format.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/median.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/sensor.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/max31865"
+  "${CMAKE_SOURCE_DIR}/tests/max6675"
+  "${CMAKE_SOURCE_DIR}/tests/sort.cpp")
+
+set(arduino_mock_for_lib_include 
+  "${CMAKE_SOURCE_DIR}/include/avr"
+  "${CMAKE_SOURCE_DIR}/extern/arduinomock"
+# "${CMAKE_SOURCE_DIR}/extern/arduinomock/include/arduino-mock"
+  "${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include"
+  "${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include")
 
 set(arduino_mock_include
-  ${CMAKE_SOURCE_DIR}/include
-  ${CMAKE_SOURCE_DIR}/include/avr
-  ${CMAKE_SOURCE_DIR}/extern/arduinomock
-#  ${CMAKE_SOURCE_DIR}/extern/arduinomock/include/arduino-mock
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include googletest/googlemock/include
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include googletest/googletest/include
-  )
-set(arduino_mock_for_lib_include 
-  arduinomock
-#  arduinomock/include/arduino-mock
-  ${CMAKE_SOURCE_DIR}/extern/arduinomock
-  ${CMAKE_SOURCE_DIR}/include/avr
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include googletest/googlemock/include
-  ${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include googletest/googletest/include)
+  "${CMAKE_SOURCE_DIR}/include"
+  "${arduino_mock_for_lib_include}")
 
 set(arduino_testing_include
-#  ${Boost_INCLUDE_DIRS}
-  ${arduino_mock_include}
-  ${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib
-  ${CMAKE_SOURCE_DIR}/extern/libraries/PWFusion_MAX31865
-  ${CMAKE_SOURCE_DIR}/extern/libraries/MCP3208
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinotemplates/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomcp3208/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src
-  ${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src)
+# "${Boost_INCLUDE_DIRS}"
+  "${arduino_mock_include}"
+  "${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib"
+  "${CMAKE_SOURCE_DIR}/extern/libraries/FixedPointsArduino/src"
+  "${CMAKE_SOURCE_DIR}/extern/libraries/Arduino-PID-Library"
+  "${CMAKE_SOURCE_DIR}/extern/libraries/PWFusion_MAX31865"
+  "${CMAKE_SOURCE_DIR}/extern/libraries/MCP3208"
+  "${CMAKE_SOURCE_DIR}/sublibraries/arduinotemplates/src"
+  "${CMAKE_SOURCE_DIR}/sublibraries/arduinomcp3208/src"
+  "${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src"
+  "${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src"
+  "${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src"
+  "${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src"
+  "${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src"
+  "${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src")
 
-set(sublibraries_include
-  ${arduino_mock_include})
+set(sublibraries_include ${arduino_mock_include})
 
 set(arduino_testing_target_link_libraries
   gtest
@@ -66,23 +66,32 @@ set(arduino_testing_target_link_libraries
 
 option(FDS_PACKAGE_TESTS "Build tests" ON)
 
-#add_compile_definitions(ARDUINO=200)
+#add_compile_definitions(P_ON_M=0)
+#add_compile_definitions(P_ON_E=1)
+
 #add_compile_definitions(FDS_ARDUINO_UNIT_TESTING=200)
+#add_compile_definitions(GATL_PID_DEBUG)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CHECK_SIZE)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CLEANUP)
 add_compile_definitions(GOS_ARDUINO_UNIT_TESTING)
+add_compile_definitions(FIXED_POINTS_USE_NAMESPACE)
+add_compile_definitions(FIXED_POINTS_NO_RANDOM)
+add_compile_definitions(FIXED_POINTS_NO_CONSTANTS)
 
-find_package(Git QUIET)
-if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-  execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  RESULT_VARIABLE GIT_SUBMOD_RESULT)
-  if(NOT GIT_SUBMOD_RESULT EQUAL "0")
-    message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-  endif()
-endif()
+#find_package(Git QUIET)
+#if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+#  execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+#  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+#  RESULT_VARIABLE GIT_SUBMOD_RESULT)
+#  if(NOT GIT_SUBMOD_RESULT EQUAL "0")
+#    message(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+#  endif()
+#endif()
 
-set(gtest_force_shared_crt ON)
+#
+# Beter to do this from outside
+#
+#set(gtest_force_shared_crt ON)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -116,10 +125,9 @@ if(FDS_PACKAGE_TESTS)
 endif()
 
 mark_as_advanced(
-BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
-gmock_build_tests gtest_build_samples gtest_build_tests
-gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols
-)
+  BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
+  gmock_build_tests gtest_build_samples gtest_build_tests
+  gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols)
 
 add_executable(ArduinoUnitTesting ${arduino_unit_testing_src})
 
@@ -135,6 +143,7 @@ target_link_libraries(ArduinoUnitTesting
 
 message(STATUS "")
 message(STATUS "BUILD SUMMARY")
+message(STATUS "  ARDUINO              : ${ARDUINO}")
 message(STATUS "  CMAKE_GENERATOR      : ${CMAKE_GENERATOR}")
 message(STATUS "  Compiler ID          : ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "  Build type           : ${CMAKE_BUILD_TYPE}")

@@ -76,7 +76,7 @@ public:
   }
 };
 
-TEST(MedianTest, add) {
+TEST(MedianTest, Add) {
   float m;
   fds::statistics::Median median;
   addtwo(median);
@@ -84,7 +84,7 @@ TEST(MedianTest, add) {
   EXPECT_FLOAT_EQ(M2, m);
 }
 
-TEST(MedianTest, median) {
+TEST(MedianTest, Median) {
   float m;
   fds::statistics::Median median;
   addthree(median);
@@ -92,7 +92,7 @@ TEST(MedianTest, median) {
   EXPECT_FLOAT_EQ(M3, m);
 }
 
-TEST(MedianTest, reset) {
+TEST(MedianTest, Reset) {
   float m;
   fds::statistics::Median median;
   addthree(median);
@@ -106,7 +106,7 @@ TEST(MedianTest, reset) {
   EXPECT_FLOAT_EQ(M3, m);
 }
 
-TEST(MedianTest, clearallbutlast) {
+TEST(MedianTest, ClearAllButLast) {
   float m;
   fds::statistics::Median median;
   addthree(median);
@@ -126,7 +126,7 @@ static void showvector(const char* id, FloatVector& v) {
   std::cout << std::endl;
 }
 
-TEST(MedianTest, comparetosortmedian) {
+TEST(MedianTest, CompareToSortMedian) {
   float m, vm;
   TestableMedian testablemedian;
   FloatVector values, testablemedianvalues;

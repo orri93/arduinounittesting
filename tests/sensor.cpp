@@ -3,7 +3,7 @@
 
 #include <arduinosensor.h>
 
-TEST(SensorTest, check) {
+TEST(SensorTest, Check) {
   uint8_t checkresult;
   double reading = 0.0;
   const double Minimum = -10.0;
@@ -21,7 +21,7 @@ TEST(SensorTest, check) {
   EXPECT_DOUBLE_EQ(Maximum, reading);
 }
 
-TEST(SensorTest, error) {
+TEST(SensorTest, Error) {
   const char* error = nullptr;
   uint8_t length;
   error = ::gos::sensor::error(GOS_SENSOR_STATUS_OK, length);
@@ -29,7 +29,7 @@ TEST(SensorTest, error) {
   EXPECT_EQ(3, length);
 }
 
-TEST(SensorTest, global) {
+TEST(SensorTest, Global) {
   uint8_t checkresult;
   double reading = 0.0;
   ::gos::sensor::range::Minimum = -10.0;

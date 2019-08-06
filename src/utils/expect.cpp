@@ -13,7 +13,7 @@ void floateq(
   size_t i;
   EXPECT_EQ(count, vector.size());
   std::vector<float>::iterator it = vector.begin();
-  for (size_t i = 0; i < count && it != vector.end(); i++) {
+  for (i = 0; i < count && it != vector.end(); i++) {
     EXPECT_FLOAT_EQ(array[i], *(it++));
   }
   EXPECT_EQ(i, count);
@@ -28,7 +28,7 @@ void floateq(
   size_t i;
   EXPECT_EQ(count, vector.size());
   std::vector<float>::iterator it = vector.begin();
-  for (size_t i = 0; i < count && it != vector.end(); i++) {
+  for (i = 0; i < count && it != vector.end(); i++) {
     EXPECT_FLOAT_EQ(array[reference[i]], *(it++));
   }
   EXPECT_EQ(i, count);

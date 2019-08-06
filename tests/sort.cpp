@@ -91,13 +91,13 @@ template<typename T> void testsortref(Sorter<T>& sorter) {
   }
 }
 
-TEST(SortTest, insertionsortfloats) {
+TEST(SortTest, InsertionSortFloats) {
   ::srand(93);
   FloatSorter sorter;
   testsort(sorter);
 }
 
-TEST(SortTest, insertionsortfloatreferences) {
+TEST(SortTest, InsertionSortFloatReferences) {
   ::srand(93);
   FloatSorter sorter;
   testsortref(sorter);

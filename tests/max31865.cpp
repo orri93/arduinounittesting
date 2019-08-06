@@ -131,7 +131,7 @@ TEST_F(Max31865Test, PwFusionMax31865) {
   spimock->In.clear();
 }
 
-TEST_F(Max31865Test, byteorder) {
+TEST_F(Max31865Test, ByteOrder) {
   uint16_t word;
   const uint8_t spiout1[] = { 0x00, 0xaf, 0x10, 0xff, 0x20, 0xfe, 0x40, 0xfd, 0x00 };
   EXPECT_EQ(0x10ff, (spiout1[2] << 8) | spiout1[3]);
@@ -203,7 +203,7 @@ TEST_F(Max31865Test, Behavior) {
   mutex.unlock();
 }
 
-TEST_F(Max31865Test, error) {
+TEST_F(Max31865Test, Error) {
   spimock->Out.pushword(0x0004);
   spimock->Out.pushword(0x0400);
 
@@ -226,7 +226,7 @@ TEST_F(Max31865Test, error) {
   EXPECT_EQ(0, length);
 }
 
-TEST_F(Max31865Test, calculation) {
+TEST_F(Max31865Test, Calculation) {
   uint8_t type;
   double pwfres, gosres, pwfcelsius, goscelsius;
 

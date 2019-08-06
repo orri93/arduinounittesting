@@ -43,3 +43,12 @@
 [submodule "sublibraries/arduinotemplates"]
 	path = sublibraries/arduinotemplates
 	url = git@github.com:orri93/arduinotemplates.git
+[submodule "extern/libraries/Arduino-PID-Library"]
+	path = extern/libraries/Arduino-PID-Library
+	url = git@github.com:orri93/Arduino-PID-Library.git
+[submodule "extern/fixed_point"]
+	path = extern/fixed_point
+	url = git@github.com:orri93/fixed_point.git
+[submodule "extern/libraries/FixedPointsArduino"]
+	path = extern/libraries/FixedPointsArduino
+	url = git@github.com:orri93/FixedPointsArduino.git

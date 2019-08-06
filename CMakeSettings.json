@@ -3,7 +3,7 @@
     {
       "name": "x64-Debug",
       "generator": "Ninja",
-      "configurationType": "RelWithDebInfo",
+      "configurationType": "Debug",
       "inheritEnvironments": [
         "msvc_x64_x64"
       ],
@@ -13,6 +13,11 @@
       "buildCommandArgs": "-v",
       "ctestCommandArgs": "",
       "variables": [
+        {
+          "name": "gtest_force_shared_crt",
+          "value": "ON",
+          "type": "BOOL"
+        }
       ]
     }
   ]
