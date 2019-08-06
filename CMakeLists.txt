@@ -5,6 +5,7 @@ project(ArduinoUnitTesting VERSION 1.0
   LANGUAGES CXX)
 
 set(arduino_unit_testing_src
+  "${CMAKE_SOURCE_DIR}/tests/gatl/crc.cpp"
   "${CMAKE_SOURCE_DIR}/tests/gatl/pid.cpp"
   "${CMAKE_SOURCE_DIR}/tests/gatl/sort.cpp"
   "${CMAKE_SOURCE_DIR}/tests/gatl/avrage.cpp"
