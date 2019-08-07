@@ -56,6 +56,15 @@ void doubleeq(
   EXPECT_EQ(it, vector.end());
 }
 
+template<typename FPQ> void fpeq(const FPQ& a, const FPQ& b) {
+  EXPECT_EQ(a.getInteger(), b.getInteger());
+  EXPECT_EQ(a.getFraction(), b.getFraction());
+}
+
+template<typename FPQ> void fpnear(const FPQ& a, const FPQ& b, const FPQ& f) {
+  EXPECT_TRUE((a - b) * (a - b) < f * f);
+}
+
 void floateq(
   std::vector<float>& vector,
   float* array,

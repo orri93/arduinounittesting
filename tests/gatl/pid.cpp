@@ -1,4 +1,3 @@
-#include <vector>
 #include <iostream>
 #include <mutex>
 
@@ -13,18 +12,13 @@
 #include <PID_v1.h>
 
 #include <gos/utils/random.h>
+#include <gos/utils/expect.h>
 
 #include <gatlpid.h>
 
+namespace fp = ::FixedPoints;
 namespace gatl = ::gos::atl;
 namespace gatu = ::gos::arduino::testing::utils;
-
-bool gatl_pid_debug = false;
-
-template<typename Q> void expectqeq(const Q& q1, const Q& q2) {
-  EXPECT_EQ(q1.getInteger(), q2.getInteger());
-  EXPECT_EQ(q1.getFraction(), q2.getFraction());
-}
 
 class TestabePid : public PID {
 public:
@@ -99,7 +93,7 @@ protected:
     releaseArduinoMock();
   }
 
-  template<typename I, typename O = I, typename P = I>
+  template<typename I, typename O = I, typename P = I, typename V = I>
   void test(
     const O& minimum,
     const O& maximum,
@@ -150,34 +144,40 @@ protected:
     tick += tickinterval;
 
     gatl::pid::Parameter<I, O, P> parameter;
-    gatl::pid::initialize(
-      parameter,
-      minimum,
-      maximum,
-      timems,
-      kp,
-      ki,
-      kd,
-      pone);
     parameter.Setpoint = setpoint;
-    gatl::pid::Variable<I, O> variable;
-    gatl::pid::initialize(variable, parameter, input, output);
+    parameter.Range = gatl::type::make_range(minimum, maximum);
+    parameter.TimeMs = timems;
+    parameter.Kp = kp;
+    parameter.Ki = ki;
+    parameter.Kd = kd;
+    parameter.PonE = pone;
+    gatl::pid::Variable<V> variable;
+    gatl::pid::tunings(variable, parameter);
+    gatl::pid::initialize(variable, parameter.Range, input, output);
 
+#ifdef GATL_PID_TUNING_IN_MS
     double kitimestime = static_cast<double>(ki) * static_cast<double>(timems);
     double kddividedbytime = static_cast<double>(kd) / static_cast<double>(timems);
-    EXPECT_DOUBLE_EQ(kitimestime, parameter.KiTimesTime);
-    EXPECT_DOUBLE_EQ(kddividedbytime, parameter.KdDividedByTime);
+#else
+    double kitimestime = static_cast<double>(ki) * (static_cast<double>(timems) / 1000.0);
+    double kddividedbytime = static_cast<double>(kd) / (static_cast<double>(timems) / 1000.0);
+#endif
+    EXPECT_DOUBLE_EQ(kitimestime, static_cast<double>(variable.KiTimesTime));
+    EXPECT_DOUBLE_EQ(kddividedbytime, static_cast<double>(variable.KdDividedByTime));
 
-    double pmin = static_cast<double>(parameter.Minimum);
-    double pmax = static_cast<double>(parameter.Maximum);
+    double pmin = static_cast<double>(parameter.Range.lowest);
+    double pmax = static_cast<double>(parameter.Range.highest);
     double pkp = static_cast<double>(parameter.Kp);
-    double pki = static_cast<double>(parameter.KiTimesTime) / 1000.0;
-    double pkd = 1000.0 * static_cast<double>(parameter.KdDividedByTime);
+    double pki = static_cast<double>(parameter.Ki);
+    double pkd = static_cast<double>(parameter.Kd);
     EXPECT_DOUBLE_EQ(pid.accessoutmin(), pmin);
     EXPECT_DOUBLE_EQ(pid.accessoutmax(), pmax);
+    EXPECT_DOUBLE_EQ(pid.GetKp(), pkp);
+    EXPECT_DOUBLE_EQ(pid.GetKi(), pki);
+    EXPECT_DOUBLE_EQ(pid.GetKd(), pkd);
     EXPECT_DOUBLE_EQ(pid.innerkp(), pkp);
-    EXPECT_DOUBLE_EQ(pid.innerki(), pki);
-    EXPECT_DOUBLE_EQ(pid.innerkd(), pkd);
+    EXPECT_DOUBLE_EQ(pid.innerki(), variable.KiTimesTime);
+    EXPECT_DOUBLE_EQ(pid.innerkd(), variable.KdDividedByTime);
 
     for (size_t i = 0; i < count; i++) {
       double rinput = gatu::random::generate<double>(randommin, randommax) / randomprecision;
@@ -202,7 +202,7 @@ protected:
     mutex.unlock();
   }
 
-  template<typename I, typename O = I, typename P = I>
+  template<typename I, typename O = I, typename P = I, typename V = I>
   void testq(
     const O& minimum,
     const O& maximum,
@@ -256,36 +256,40 @@ protected:
     tick += tickinterval;
 
     gatl::pid::Parameter<I, O, P> parameter;
-    gatl::pid::initialize(
-      parameter,
-      minimum,
-      maximum,
-      timems,
-      kp,
-      ki,
-      kd,
-      pone);
     parameter.Setpoint = setpoint;
-    gatl::pid::Variable<I, O> variable;
-    gatl::pid::initialize(variable, parameter, input, output);
+    parameter.Range = gatl::type::make_range(minimum, maximum);
+    parameter.TimeMs = timems;
+    parameter.Kp = kp;
+    parameter.Ki = ki;
+    parameter.Kd = kd;
+    parameter.PonE = pone;
+    gatl::pid::Variable<V> variable;
+    gatl::pid::tunings(variable, parameter);
+    gatl::pid::initialize(variable, parameter.Range, input, output);
 
-    P kitimestime = ki * timems;
-    P kddividedbytime = kd / timems;
-    expectqeq(kitimestime, parameter.KiTimesTime);
-    expectqeq(kddividedbytime, parameter.KdDividedByTime);
+#ifdef GATL_PID_TUNING_IN_MS
+    double kitimestime = static_cast<double>(ki) * static_cast<double>(timems);
+    double kddividedbytime = static_cast<double>(kd) / static_cast<double>(timems);
+#else
+    double kitimestime = static_cast<double>(ki) * (static_cast<double>(timems) / 1000.0);
+    double kddividedbytime = static_cast<double>(kd) / (static_cast<double>(timems) / 1000.0);
+#endif
+    EXPECT_NEAR(kitimestime, static_cast<double>(variable.KiTimesTime), 0.01);
+    EXPECT_NEAR(kddividedbytime, static_cast<double>(variable.KdDividedByTime), 0.01);
 
-    double pmin = static_cast<double>(parameter.Minimum);
-    double pmax = static_cast<double>(parameter.Maximum);
+    double pmin = static_cast<double>(parameter.Range.lowest);
+    double pmax = static_cast<double>(parameter.Range.highest);
     double pkp = static_cast<double>(parameter.Kp);
-    double pki = static_cast<double>(parameter.KiTimesTime) / 1000.0;
-    double pkd = 1000.0 * static_cast<double>(parameter.KdDividedByTime);
+    double pki = static_cast<double>(parameter.Ki);
+    double pkd = static_cast<double>(parameter.Kd);
     EXPECT_DOUBLE_EQ(pid.accessoutmin(), pmin);
     EXPECT_DOUBLE_EQ(pid.accessoutmax(), pmax);
+    EXPECT_DOUBLE_EQ(pid.GetKp(), pkp);
+    EXPECT_DOUBLE_EQ(pid.GetKi(), pki);
+    EXPECT_DOUBLE_EQ(pid.GetKd(), pkd);
     EXPECT_DOUBLE_EQ(pid.innerkp(), pkp);
-    EXPECT_DOUBLE_EQ(pid.innerki(), pki);
-    EXPECT_NEAR(pid.innerkd(), pkd, 0.05);
-
-    gatl_pid_debug = true;
+    EXPECT_NEAR(pid.innerki(), static_cast<double>(variable.KiTimesTime), 0.01);
+    EXPECT_NEAR(pid.innerkd(), static_cast<double>(variable.KdDividedByTime), 0.01);
 
     for (size_t i = 0; i < count; i++) {
       double rinput = gatu::random::generate<double>(randommin, randommax) / randomprecision;
@@ -300,20 +304,17 @@ protected:
 
       gatloutput = gatl::pid::compute(gatlinput, variable, parameter);
       double gatlcastoutput = static_cast<double>(gatloutput);
-      EXPECT_NEAR(testoutput, gatlcastoutput, 1.0);
+      EXPECT_NEAR(testoutput, gatlcastoutput, 0.5);
 
       tick += tickinterval;
     }
-
 
     releaseArduinoMock();
     mutex.unlock();
   }
 
   ArduinoMock* arduinomock;
-
   std::mutex mutex;
-
 };
 
 TEST_F(GatlPidFixture, ComputeDouble) {

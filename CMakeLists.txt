@@ -8,9 +8,11 @@ set(arduino_unit_testing_src
   "${CMAKE_SOURCE_DIR}/tests/gatl/crc.cpp"
   "${CMAKE_SOURCE_DIR}/tests/gatl/pid.cpp"
   "${CMAKE_SOURCE_DIR}/tests/gatl/sort.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/gatl/type.cpp"
   "${CMAKE_SOURCE_DIR}/tests/gatl/avrage.cpp"
   "${CMAKE_SOURCE_DIR}/tests/gatl/median.cpp"
   "${CMAKE_SOURCE_DIR}/tests/gatl/format.cpp"
+  "${CMAKE_SOURCE_DIR}/tests/gatl/utility.cpp"
   "${CMAKE_SOURCE_DIR}/tests/format.cpp"
   "${CMAKE_SOURCE_DIR}/tests/median.cpp"
   "${CMAKE_SOURCE_DIR}/tests/sensor.cpp"
@@ -71,7 +73,7 @@ option(FDS_PACKAGE_TESTS "Build tests" ON)
 #add_compile_definitions(P_ON_E=1)
 
 #add_compile_definitions(FDS_ARDUINO_UNIT_TESTING=200)
-#add_compile_definitions(GATL_PID_DEBUG)
+add_compile_definitions(GATL_PID_DEBUG)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CHECK_SIZE)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CLEANUP)
 add_compile_definitions(GOS_ARDUINO_UNIT_TESTING)
