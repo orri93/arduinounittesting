@@ -5,50 +5,55 @@ project(ArduinoUnitTesting VERSION 1.0
   LANGUAGES CXX)
 
 set(arduino_unit_testing_src
-  "${CMAKE_SOURCE_DIR}/tests/gatl/crc.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/gatl/pid.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/gatl/sort.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/gatl/type.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/gatl/avrage.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/gatl/median.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/gatl/format.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/gatl/utility.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/format.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/median.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/sensor.cpp"
-  "${CMAKE_SOURCE_DIR}/tests/max31865"
-  "${CMAKE_SOURCE_DIR}/tests/max6675"
-  "${CMAKE_SOURCE_DIR}/tests/sort.cpp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/crc.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/pid.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/sort.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/type.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/avrage.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/median.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/format.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/utility.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/format.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/median.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/sensor.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/max31865"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/max6675"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/sort.cpp")
 
 set(arduino_mock_for_lib_include 
-  "${CMAKE_SOURCE_DIR}/include/avr"
-  "${CMAKE_SOURCE_DIR}/extern/arduinomock"
-# "${CMAKE_SOURCE_DIR}/extern/arduinomock/include/arduino-mock"
-  "${CMAKE_SOURCE_DIR}/extern/googletest/googlemock/include"
-  "${CMAKE_SOURCE_DIR}/extern/googletest/googletest/include")
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/avr"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/arduinomock"
+# "${CMAKE_CURRENT_SOURCE_DIR}/extern/arduinomock/include/arduino-mock"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googlemock/include"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googletest/include")
 
 set(arduino_mock_include
-  "${CMAKE_SOURCE_DIR}/include"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
   "${arduino_mock_for_lib_include}")
+
+set(arduino_unit_testing_sublibraries_dir ${CMAKE_CURRENT_SOURCE_DIR}/sublibraries)
+
+set(sublibraries_include ${arduino_mock_include})
 
 set(arduino_testing_include
 # "${Boost_INCLUDE_DIRS}"
   "${arduino_mock_include}"
-  "${CMAKE_SOURCE_DIR}/src/avr-libc/libc/stdlib"
-  "${CMAKE_SOURCE_DIR}/extern/libraries/FixedPointsArduino/src"
-  "${CMAKE_SOURCE_DIR}/extern/libraries/Arduino-PID-Library"
-  "${CMAKE_SOURCE_DIR}/extern/libraries/PWFusion_MAX31865"
-  "${CMAKE_SOURCE_DIR}/extern/libraries/MCP3208"
-  "${CMAKE_SOURCE_DIR}/sublibraries/arduinotemplates/src"
-  "${CMAKE_SOURCE_DIR}/sublibraries/arduinomcp3208/src"
-  "${CMAKE_SOURCE_DIR}/sublibraries/arduinomax6675/src"
-  "${CMAKE_SOURCE_DIR}/sublibraries/arduinomax31865/src"
-  "${CMAKE_SOURCE_DIR}/sublibraries/arduinosensor/src"
-  "${CMAKE_SOURCE_DIR}/sublibraries/arduinoformat/src"
-  "${CMAKE_SOURCE_DIR}/sublibraries/arduinomedian/src"
-  "${CMAKE_SOURCE_DIR}/sublibraries/arduinosort/src")
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/avr-libc/libc/stdlib"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/FixedPointsArduino/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/Arduino-PID-Library"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/PWFusion_MAX31865"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/MCP3208"
+  "${arduino_unit_testing_sublibraries_dir}/arduinotemplates/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinomcp3208/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinomax6675/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinomax31865/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinosensor/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinoformat/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinomedian/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinosort/src")
 
-set(sublibraries_include ${arduino_mock_include})
+set(arduino_avr_include
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/avr")
 
 set(arduino_testing_target_link_libraries
   gtest
@@ -120,6 +125,7 @@ add_subdirectory(sublibraries/arduinosensor)
 add_subdirectory(sublibraries/arduinoformat)
 add_subdirectory(sublibraries/arduinomedian)
 add_subdirectory(sublibraries/arduinosort)
+add_subdirectory(sublibraries/arduinotick)
 add_subdirectory(extern/libraries)
 
 if(FDS_PACKAGE_TESTS)
@@ -145,13 +151,16 @@ target_link_libraries(ArduinoUnitTesting
   ${arduino_testing_target_link_libraries})
 
 message(STATUS "")
-message(STATUS "BUILD SUMMARY")
-message(STATUS "  ARDUINO              : ${ARDUINO}")
-message(STATUS "  CMAKE_GENERATOR      : ${CMAKE_GENERATOR}")
-message(STATUS "  Compiler ID          : ${CMAKE_CXX_COMPILER_ID}")
-message(STATUS "  Build type           : ${CMAKE_BUILD_TYPE}")
-message(STATUS "  Build tests          : ${FDS_PACKAGE_TESTS}")
-message(STATUS "  Force Shared CRT     : ${gtest_force_shared_crt}")
-#message(STATUS "  Boost version        : ${Boost_VERSION}")
-#message(STATUS "  Boost include dir    : ${Boost_INCLUDE_DIRS}")
+message(STATUS "Arduino Unit Testing BUILD SUMMARY")
+message(STATUS "  ARDUINO                   : ${ARDUINO}")
+message(STATUS "  CMAKE_GENERATOR           : ${CMAKE_GENERATOR}")
+message(STATUS "  CMAKE_SOURCE_DIR          : ${CMAKE_SOURCE_DIR}")
+message(STATUS "  CMAKE_CURRENT_SOURCE_DIR  : ${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "  CMAKE_GENERATOR           : ${CMAKE_GENERATOR}")
+message(STATUS "  Compiler ID               : ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "  Build type                : ${CMAKE_BUILD_TYPE}")
+message(STATUS "  Build tests               : ${FDS_PACKAGE_TESTS}")
+message(STATUS "  Force Shared CRT          : ${gtest_force_shared_crt}")
+#message(STATUS "  Boost version             : ${Boost_VERSION}")
+#message(STATUS "  Boost include dir         : ${Boost_INCLUDE_DIRS}")
 message(STATUS "")

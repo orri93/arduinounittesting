@@ -5,5 +5,4 @@ add_library(libavrlibc STATIC
 
 set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
-include_directories(
-  ${CMAKE_SOURCE_DIR}/include/avr)
+include_directories(${arduino_avr_include})
