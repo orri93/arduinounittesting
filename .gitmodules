@@ -52,3 +52,9 @@
 [submodule "extern/libraries/FixedPointsArduino"]
 	path = extern/libraries/FixedPointsArduino
 	url = git@github.com:orri93/FixedPointsArduino.git
+[submodule "sublibraries/arduinomodbusslave"]
+	path = sublibraries/arduinomodbusslave
+	url = git@github.com:orri93/arduinomodbusslave.git
+[submodule "extern/libraries/ArduinoModbusSlave"]
+	path = extern/libraries/ArduinoModbusSlave
+	url = git@github.com:orri93/ArduinoModbusSlave-1.git

@@ -21,6 +21,7 @@ set(arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/sort.cpp")
 
 set(arduino_mock_for_lib_include 
+  "${CMAKE_CURRENT_SOURCE_DIR}/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/avr"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/arduinomock"
 # "${CMAKE_CURRENT_SOURCE_DIR}/extern/arduinomock/include/arduino-mock"
@@ -28,7 +29,6 @@ set(arduino_mock_for_lib_include
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googletest/include")
 
 set(arduino_mock_include
-  "${CMAKE_CURRENT_SOURCE_DIR}/include"
   "${arduino_mock_for_lib_include}")
 
 set(arduino_unit_testing_sublibraries_dir ${CMAKE_CURRENT_SOURCE_DIR}/sublibraries)
