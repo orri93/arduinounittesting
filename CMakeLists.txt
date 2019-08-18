@@ -13,6 +13,7 @@ set(arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/format.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/utility.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/display.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/format.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/sensor.cpp"
@@ -38,6 +39,7 @@ set(sublibraries_include ${arduino_mock_include})
 set(arduino_testing_include
 # "${Boost_INCLUDE_DIRS}"
   "${arduino_mock_include}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/mock"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/avr-libc/libc/stdlib"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/FixedPointsArduino/src"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/Arduino-PID-Library"
