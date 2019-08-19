@@ -30,7 +30,9 @@ extern const uint8_t* u8g2_font_inb30_mr;
 
 class U8g2 {
 public:
+  U8g2() {}
   U8g2(const u8g2_cb_t *rotation, uint8_t reset = U8X8_PIN_NONE, uint8_t clock = U8X8_PIN_NONE, uint8_t data = U8X8_PIN_NONE) {}
+  MOCK_METHOD0(begin, bool(void));
   MOCK_METHOD0(firstPage, void());
   MOCK_METHOD5(drawXBMP, void(u8g2_uint_t x, u8g2_uint_t y, u8g2_uint_t w, u8g2_uint_t h, const uint8_t *bitmap));
   MOCK_METHOD0(nextPage, uint8_t());
