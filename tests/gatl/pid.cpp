@@ -148,11 +148,12 @@ protected:
     parameter.Range = gatl::type::make_range(minimum, maximum);
     parameter.TimeMs = timems;
     parameter.Kp = kp;
-    parameter.Ki = ki;
-    parameter.Kd = kd;
     parameter.PonE = pone;
+    gatl::pid::Tune<P> tune;
+    tune.Ki = ki;
+    tune.Kd = kd;
     gatl::pid::Variable<V> variable;
-    gatl::pid::tunings(variable, parameter);
+    gatl::pid::tunings(variable, parameter, tune);
     gatl::pid::initialize(variable, parameter.Range, input, output);
 
 #ifdef GATL_PID_TUNING_IN_MS
@@ -168,8 +169,8 @@ protected:
     double pmin = static_cast<double>(parameter.Range.lowest);
     double pmax = static_cast<double>(parameter.Range.highest);
     double pkp = static_cast<double>(parameter.Kp);
-    double pki = static_cast<double>(parameter.Ki);
-    double pkd = static_cast<double>(parameter.Kd);
+    double pki = static_cast<double>(tune.Ki);
+    double pkd = static_cast<double>(tune.Kd);
     EXPECT_DOUBLE_EQ(pid.accessoutmin(), pmin);
     EXPECT_DOUBLE_EQ(pid.accessoutmax(), pmax);
     EXPECT_DOUBLE_EQ(pid.GetKp(), pkp);
@@ -260,11 +261,12 @@ protected:
     parameter.Range = gatl::type::make_range(minimum, maximum);
     parameter.TimeMs = timems;
     parameter.Kp = kp;
-    parameter.Ki = ki;
-    parameter.Kd = kd;
     parameter.PonE = pone;
+    gatl::pid::Tune<P> tune;
+    tune.Ki = ki;
+    tune.Kd = kd;
     gatl::pid::Variable<V> variable;
-    gatl::pid::tunings(variable, parameter);
+    gatl::pid::tunings(variable, parameter, tune);
     gatl::pid::initialize(variable, parameter.Range, input, output);
 
 #ifdef GATL_PID_TUNING_IN_MS
@@ -280,8 +282,8 @@ protected:
     double pmin = static_cast<double>(parameter.Range.lowest);
     double pmax = static_cast<double>(parameter.Range.highest);
     double pkp = static_cast<double>(parameter.Kp);
-    double pki = static_cast<double>(parameter.Ki);
-    double pkd = static_cast<double>(parameter.Kd);
+    double pki = static_cast<double>(tune.Ki);
+    double pkd = static_cast<double>(tune.Kd);
     EXPECT_DOUBLE_EQ(pid.accessoutmin(), pmin);
     EXPECT_DOUBLE_EQ(pid.accessoutmax(), pmax);
     EXPECT_DOUBLE_EQ(pid.GetKp(), pkp);
@@ -428,4 +430,40 @@ TEST_F(GatlPidFixture, ComputeInteger) {
     1024,           /* Random maximum   */
     100.0,          /* Random precision */
     256);           /* Count            */
+}
+
+TEST_F(GatlPidFixture, TuneDouble) {
+  const double Kp = 2.5;
+  const double Ti = 12.5;
+  const double Td = 3.2;
+  double ki, kd, ti, td;
+
+  ki = gatl::pid::Ki(Kp, Ti);
+  EXPECT_DOUBLE_EQ(Kp / Ti, ki);
+  kd = gatl::pid::Kd(Kp, Td);
+  EXPECT_DOUBLE_EQ(Kp * Td, kd);
+
+  ti = gatl::pid::Ti(Kp, ki);
+  EXPECT_DOUBLE_EQ(Ti, ti);
+  td = gatl::pid::Td(Kp, kd);
+  EXPECT_DOUBLE_EQ(Td, td);
+
+  gatl::pid::Parameter<double> parameter;
+  parameter.Kp = 1.0;
+  parameter.TimeMs = 100;
+  gatl::pid::Tune<double> tune;
+  tune.Ki = 0.00556;
+  tune.Kd = 12.0;
+  gatl::pid::Variable<double> variablea;
+  gatl::pid::tunings(variablea, parameter, tune);
+  double times = parameter.TimeMs / 1000.0;
+  EXPECT_DOUBLE_EQ(tune.Ki * times, variablea.KiTimesTime);
+  EXPECT_DOUBLE_EQ(tune.Kd / times, variablea.KdDividedByTime);
+  gatl::pid::TimeTune<double> tunetime;
+  tunetime.Ti = 180.0;
+  tunetime.Td = 12.0;
+  gatl::pid::Variable<double> variableb;
+  gatl::pid::tunings(variableb, parameter, tunetime);
+  EXPECT_NEAR(variablea.KiTimesTime, variableb.KiTimesTime, 0.000001);
+  EXPECT_NEAR(variablea.KdDividedByTime, variableb.KdDividedByTime, 0.000001);
 }
