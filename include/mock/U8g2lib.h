@@ -40,6 +40,7 @@ public:
   MOCK_METHOD3(drawStr, u8g2_uint_t(u8g2_uint_t x, u8g2_uint_t y, const char *s));
   MOCK_METHOD1(getStrWidth, u8g2_uint_t(const char *s));
   MOCK_METHOD1(getUTF8Width, u8g2_uint_t(const char *s));
+  MOCK_METHOD4(drawLine, void(u8g2_uint_t x1, u8g2_uint_t y1, u8g2_uint_t x2, u8g2_uint_t y2));
 };
 
 typedef U8g2 U8G2_SSD1306_128X32_UNIVISION_1_HW_I2C;
