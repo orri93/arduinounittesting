@@ -14,6 +14,7 @@ set(arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/format.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/utility.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/display.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/sensor.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/format.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/sensor.cpp"
@@ -73,6 +74,8 @@ set(arduino_testing_target_link_libraries
   libarduinomedian
   libarduinosort
   libarduinoextern)
+
+set(gtest_force_shared_crt ON CACHE BOOL "Prefer to use Shared CRT for static")
 
 option(FDS_PACKAGE_TESTS "Build tests" ON)
 

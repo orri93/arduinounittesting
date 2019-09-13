@@ -112,10 +112,10 @@ TEST(GatlFormatTest, Format) {
   gatl::format::integer(buffer, integer, &id, &unit, GOS_ARDUINO_TEMPLATE_LIBRARY_WIDTH_FILL_NEGATIVE);
   EXPECT_STREQ("A:666    C", buffer.Buffer);
 
-  gatl::format::error(buffer, TEXT_ERROR, sizeof(TEXT_ERROR), &id);
+  gatl::format::message(buffer, TEXT_ERROR, sizeof(TEXT_ERROR), &id);
   EXPECT_STREQ("A:Failure", buffer.Buffer);
 
-  gatl::format::error(buffer, TEXT_ERROR, sizeof(TEXT_ERROR));
+  gatl::format::message(buffer, TEXT_ERROR, sizeof(TEXT_ERROR));
   EXPECT_STREQ("Failure", buffer.Buffer);
 
   buffer.cleanup();
