@@ -15,6 +15,7 @@ set(arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/utility.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/display.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/sensor.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixedpoints.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/format.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/sensor.cpp"
@@ -127,6 +128,7 @@ add_subdirectory(sublibraries/arduinomcp3208)
 add_subdirectory(sublibraries/arduinomax6675)
 add_subdirectory(sublibraries/arduinomax31865)
 add_subdirectory(sublibraries/arduinosensor)
+add_subdirectory(sublibraries/arduinosinled)
 add_subdirectory(sublibraries/arduinoformat)
 add_subdirectory(sublibraries/arduinomedian)
 add_subdirectory(sublibraries/arduinosort)

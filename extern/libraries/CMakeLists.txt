@@ -32,6 +32,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
+target_compile_options(libarduinoextern PRIVATE /wd4244)
+target_compile_options(libarduinoextern PRIVATE /wd4267)
+
+#target_compile_definitions(libarduinoextern PUBLIC /wd4244)
+
 include_directories(
   ${arduino_mock_include}
   ${ArduinoModbusSlave_include}

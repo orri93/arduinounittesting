@@ -17,13 +17,17 @@ TEST(GatlDisplayTest, Bitmap) {
   EXPECT_CALL(*(oled.U8g2), drawXBMP).Times(testing::Exactly(1));
   EXPECT_CALL(*(oled.U8g2), nextPage).Times(testing::Exactly(1)).
     WillOnce(testing::Return(0));
-  oled.logo(fds_logo_width, fds_logo_height, fds_logo_bits);
+  gatl::display::synchronous::logo(
+    oled,
+    fds_logo_width,
+    fds_logo_height,
+    fds_logo_bits);
   delete oled.U8g2;
 }
 
 TEST(GatlDisplayTest, OneLine) {
   gatl::display::Oled<> oled;
-  gatl::display::line::One<> oneline(oled);
+  gatl::display::asynchronous::line::One<> oneline(oled);
   gatl::buffer::Holder<> buffer(TEXT_LINE_1, sizeof(TEXT_LINE_1));
   oneline.display(buffer);
   EXPECT_CALL(*(oled.U8g2), firstPage).Times(testing::Exactly(1));
@@ -37,7 +41,7 @@ TEST(GatlDisplayTest, OneLine) {
 
 TEST(GatlDisplayTest, TwoLine) {
   gatl::display::Oled<> oled;
-  gatl::display::line::Two<> twoline(oled);
+  gatl::display::asynchronous::line::Two<> twoline(oled);
   gatl::buffer::Holder<> buffer1(TEXT_LINE_1, sizeof(TEXT_LINE_1));
   gatl::buffer::Holder<> buffer2(TEXT_LINE_2, sizeof(TEXT_LINE_2));
   twoline.display(buffer1, buffer2);
@@ -52,7 +56,7 @@ TEST(GatlDisplayTest, TwoLine) {
 
 TEST(GatlDisplayTest, Graph) {
   gatl::display::Oled<> oled;
-  gatl::display::Graph<> graph(oled);
+  gatl::display::asynchronous::Graph<> graph(oled);
   gatl::statistics::Set<gatl::display::u8g2_point_t> set(0, 128 / graph.Dx);
   randomSeed(0);
   int y = 32;
