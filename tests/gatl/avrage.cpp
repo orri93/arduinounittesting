@@ -48,7 +48,8 @@ TEST(GatlAvrageTest, RunningAvrage) {
     double r = gatu::random::generate<double>(0, 1024);
     rv.add(r);
     avrage.add(r);
-    gatu::expect::doubleeq(dv, set);
+    GOS_ARDUINO_TESTING_EQ_VECTOR_SET(dv, set, uint16_t, double);
+    //gatu::expect::doubleeq(dv, set);
     double calculated = std::accumulate(dv.begin(), dv.end(), 0.0) / set.Count;
     double avragevalue = avrage.get();
     EXPECT_DOUBLE_EQ(calculated, avragevalue);

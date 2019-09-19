@@ -47,7 +47,8 @@ TEST(GatlMedianTest, RunningMedian) {
     double r = gatu::random::generate<double>(0, 1024);
     rv.add(r);
     set.add(r);
-    gatu::expect::doubleeq(dv, set);
+    GOS_ARDUINO_TESTING_EQ_VECTOR_SET(dv, set, uint16_t, double);
+    //gatu::expect::doubleeq(dv, set);
     double calculated = gatu::statistics::median(dv);
     double medianvalue = median.get();
     EXPECT_DOUBLE_EQ(calculated, medianvalue);
@@ -62,7 +63,8 @@ TEST(GatlMedianTest, RunningMedian) {
     uint32_t dwr = gatu::random::generate<uint32_t>(0, 1024);
     rdwv.add(dwr);
     dwset.add(dwr);
-    gatu::expect::eq<uint32_t>(dwv, dwset);
+    GOS_ARDUINO_TESTING_EQ_VECTOR_SET(dwv, dwset, uint8_t, uint32_t);
+    //gatu::expect::eq<uint32_t>(dwv, dwset);
     uint32_t dwcalculated = gatu::statistics::median(dwv);
     uint32_t dwmedianvalue = dwmedian.get();
     EXPECT_EQ(dwcalculated, dwmedianvalue);

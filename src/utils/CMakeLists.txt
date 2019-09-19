@@ -1,5 +1,5 @@
 add_library(libgosutils STATIC
-  expect.cpp
+# expect.cpp
   order.cpp
   wordq.cpp)
 
