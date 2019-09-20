@@ -180,4 +180,15 @@ TEST(GatlUtilTest, NumberPart) {
 
   fpv = gatl::utility::number::part::combine<uint16_t, T>(l16b, h16b);
   GOS_ARDUINO_TESTING_EQ_FP(cfpv, fpv);
+
+  fpv = 0.0;
+  gatl::utility::number::part::apply<uint16_t, T>(
+    fpv,
+    l16b,
+    gatl::utility::number::part::type::first);
+  gatl::utility::number::part::apply<uint16_t, T>(
+    fpv,
+    h16b,
+    gatl::utility::number::part::type::second);
+  GOS_ARDUINO_TESTING_EQ_FP(cfpv, fpv);
 }
