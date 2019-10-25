@@ -58,3 +58,6 @@
 [submodule "extern/libraries/ArduinoModbusSlave"]
 	path = extern/libraries/ArduinoModbusSlave
 	url = git@github.com:orri93/ArduinoModbusSlave-1.git
+[submodule "extern/cnl"]
+	path = extern/cnl
+	url = https://github.com/johnmcfarlane/cnl.git

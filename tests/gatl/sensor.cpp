@@ -77,7 +77,7 @@ TEST(GatlSensorTest, SingleSensor) {
 
 TEST(GatlSensorTest, SensorArray) {
   typedef gatl::Sensor<>* SensorPointer;
-  SensorPointer pointer[2];
+  //SensorPointer pointer[2];
 
   TestSensor<> sensor;
   TestSensor<>::Status status = sensor.measure();

@@ -9,7 +9,7 @@
 #define TEXT_UNIT      " C"
 #define SENSOR_IDS     "PK"
 
-TEST(AuinoFormatTest, SetupAndGet) {
+TEST(ArduinoFormatTest, SetupAndGet) {
   char* pointer = nullptr;
   fds::format::setup();
   pointer = fds::format::get(0);
@@ -19,7 +19,7 @@ TEST(AuinoFormatTest, SetupAndGet) {
   fds::format::free();
 }
 
-TEST(AuinoFormatTest, Number) {
+TEST(ArduinoFormatTest, Number) {
   char* pointer = nullptr;
   fds::format::setup();
   fds::format::number(93.418);
@@ -33,7 +33,7 @@ TEST(AuinoFormatTest, Number) {
   fds::format::free();
 }
 
-TEST(AuinoFormatTest, NumberOnLine) {
+TEST(ArduinoFormatTest, NumberOnLine) {
   char* pointer = nullptr;
   fds::format::setup();
   fds::format::set('\0', "C", 2, 9, 6, 1);
@@ -43,7 +43,7 @@ TEST(AuinoFormatTest, NumberOnLine) {
   fds::format::free();
 }
 
-TEST(AuinoFormatTest, Main) {
+TEST(ArduinoFormatTest, Main) {
   char* pointer = nullptr;
   fds::format::setup();
   fds::format::set(

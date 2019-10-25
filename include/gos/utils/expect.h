@@ -78,10 +78,10 @@
 }
 
 #define GOS_ARDUINO_TESTING_EQ_FP(a,b) \
-  EXPECT_EQ(a.getInteger(), b.getInteger()); \
-  EXPECT_EQ(a.getFraction(), b.getFraction())
+  EXPECT_EQ( ( a ).getInteger(), ( b ).getInteger()); \
+  EXPECT_EQ( ( a ).getFraction(), ( b ).getFraction())
 
 #define GOS_ARDUINO_TESTING_EQ_FP_NEAR(a,b,f) \
-  EXPECT_TRUE((a - b) * (a - b) < f * f)
+  EXPECT_TRUE(( ( a ) - ( b ) ) * ( ( a )  - ( b ) ) < ( f ) * ( f ) )
 
 #endif /*_GOS_ARDUINO_TESTING_UTILS_EXPECT_H_*/

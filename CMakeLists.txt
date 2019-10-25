@@ -11,6 +11,7 @@ set(arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/type.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/avrage.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/median.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/modbus.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/format.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/utility.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/display.cpp"
@@ -31,17 +32,23 @@ set(arduino_mock_for_lib_include
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googlemock/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googletest/include")
 
-set(arduino_mock_include
-  "${arduino_mock_for_lib_include}")
+set(arduino_unit_testing_sublibraries_dir
+  ${CMAKE_CURRENT_SOURCE_DIR}/sublibraries)
 
-set(arduino_unit_testing_sublibraries_dir ${CMAKE_CURRENT_SOURCE_DIR}/sublibraries)
+set(arduino_mock_include
+  "${arduino_mock_for_lib_include}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/mock"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/cnl/include"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/fixed_point/include"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/FixedPointsArduino/src"
+  "${arduino_unit_testing_sublibraries_dir}/arduinotemplates/src"
+  )
 
 set(sublibraries_include ${arduino_mock_include})
 
 set(arduino_testing_include
 # "${Boost_INCLUDE_DIRS}"
   "${arduino_mock_include}"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/mock"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/avr-libc/libc/stdlib"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/FixedPointsArduino/src"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/Arduino-PID-Library"
@@ -87,6 +94,7 @@ option(FDS_PACKAGE_TESTS "Build tests" ON)
 add_compile_definitions(GATL_PID_DEBUG)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CHECK_SIZE)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CLEANUP)
+add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_MODBUS_TESTING)
 add_compile_definitions(GOS_ARDUINO_UNIT_TESTING)
 add_compile_definitions(FIXED_POINTS_USE_NAMESPACE)
 add_compile_definitions(FIXED_POINTS_NO_RANDOM)

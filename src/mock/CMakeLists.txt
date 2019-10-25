@@ -1,6 +1,7 @@
 add_library(libmock STATIC
   SPI.cpp
-  U8g2lib.cpp)
+  U8g2lib.cpp
+  ModbusSlave.cpp)
 
 set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
