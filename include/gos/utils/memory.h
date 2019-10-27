@@ -65,15 +65,24 @@ void decimal(
 
 template<typename T, typename I = uint8_t>
 void reverse(std::unique_ptr<T[]>& typearray, const I& count) {
-  std::unique_ptr<T[]> r = std::make_unique<T[]>(count);
-  I rc = count;
+  std::unique_ptr<T[]> destination = std::make_unique<T[]>(count);
+  reverse<T, I>(destination, typearray, count);
   for (I i = 0; i < count; i++) {
-    r[i] = typearray[--rc];
-  }
-  for (I i = 0; i < count; i++) {
-    typearray[i] = r[i];
+    typearray[i] = destination[i];
   }
 }
+
+template<typename T, typename I = uint8_t>
+void reverse(
+  std::unique_ptr<T[]>& destination,
+  const std::unique_ptr<T[]>& source,
+  const I& count) {
+  I rc = count;
+  for (I i = 0; i < count; i++) {
+    destination[i] = source[--rc];
+  }
+}
+
 }
 
 namespace address {
