@@ -13,6 +13,7 @@ set(arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/modbus.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/format.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/binding.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/utility.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/display.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/sensor.cpp"
@@ -95,6 +96,7 @@ add_compile_definitions(GATL_PID_DEBUG)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CHECK_SIZE)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_CLEANUP)
 add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_MODBUS_TESTING)
+add_compile_definitions(GOS_ARDUINO_TEMPLATE_LIBRARY_BINDING_TESTING)
 add_compile_definitions(GOS_ARDUINO_UNIT_TESTING)
 add_compile_definitions(FIXED_POINTS_USE_NAMESPACE)
 add_compile_definitions(FIXED_POINTS_NO_RANDOM)
@@ -159,6 +161,10 @@ add_executable(ArduinoUnitTesting ${arduino_unit_testing_src})
 #set_target_properties(gtest_main PROPERTIES FOLDER extern)
 #set_target_properties(gmock PROPERTIES FOLDER extern)
 #set_target_properties(gmock_main PROPERTIES FOLDER extern)
+
+if (MSVC)
+  target_compile_options(ArduinoUnitTesting PRIVATE /wd4244)
+endif()
 
 include_directories(${arduino_testing_include})
 

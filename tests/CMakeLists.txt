@@ -9,6 +9,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
+if (MSVC)
+  target_compile_options(executegtests PRIVATE /wd4244)
+endif()
+
 include_directories(${arduino_testing_include})
 
 target_link_libraries(executegtests

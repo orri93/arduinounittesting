@@ -11,209 +11,126 @@
 #include <FixedPoints/SFixed.h>
 
 #include <gos/utils/expect.h>
+#include <gos/utils/memory.h>
+#include <gos/utils/binding.h>
+
+namespace gatum = ::gos::arduino::testing::utils::memory;
+namespace gatub = ::gos::arduino::testing::utils::binding;
 
 namespace gatl = ::gos::atl;
+namespace gatlb = ::gos::atl::binding;
 
-typedef ::FixedPoints::SQ15x16 FixedPointType;
+namespace gatl = ::gos::atl;
+namespace gatlm = ::gos::atl::modbus;
+namespace gatlmd = ::gos::atl::modbus::detail;
 
-typedef std::unique_ptr<bool[]> BooleanArray;
-typedef std::unique_ptr<uint16_t[]> IntegerArray;
-typedef std::unique_ptr<FixedPointType[]> FixedPointArray;
-typedef std::unique_ptr<float[]> FloatArray;
-typedef std::unique_ptr<int32_t[]> Int32Array;
-
-void create(BooleanArray& boolarray, const uint8_t& count) {
-  boolarray = std::make_unique<bool[]>(count);
-  for (size_t i = 0; i < count; i++) {
-    boolarray[i] = false;
-  }
-}
-
-void create(IntegerArray& intarray, const uint8_t& count) {
-  intarray = std::make_unique<uint16_t[]>(count);
-  for (size_t i = 0; i < count; i++) {
-    intarray[i] = 0x0000;
-  }
-}
-
-void create(FixedPointArray& fparray, const uint8_t& count) {
-  fparray = std::make_unique<FixedPointType[]>(count);
-  for (size_t i = 0; i < count; i++) {
-    fparray[i] = 0.0;
-  }
-}
-
-void create(FloatArray& floatarray, const uint8_t& count) {
-  floatarray = std::make_unique<float[]>(count);
-  for (size_t i = 0; i < count; i++) {
-    floatarray[i] = 0.0F;
-  }
-}
-
-void create(Int32Array& int32array, const uint8_t& count) {
-  int32array = std::make_unique<int32_t[]>(count);
-  for (size_t i = 0; i < count; i++) {
-    int32array[i] = 0;
-  }
-}
-
-template<typename T> void reverse(
-  std::unique_ptr<T[]>& typearray,
-  const uint8_t& count) {
-  std::unique_ptr<T[]> r = std::make_unique<T[]>(count);
-  uint8_t rc = count;
-  for (size_t i = 0; i < count; i++) {
-    r[i] = typearray[--rc];
-  }
-  for (size_t i = 0; i < count; i++) {
-    typearray[i] = r[i];
-  }
-}
-
-void transform(BooleanArray& boolarray, const uint8_t& count) {
-  for (size_t i = 0; i < count; i++) {
-    boolarray[i] = boolarray[i] ? false : true;
-  }
-}
-
-struct BindingTest {
-  uint16_t Start;
-  uint8_t Count;
-};
+namespace gatlunp = ::gos::atl::utility::number::part;
 
 class GatlModbusFixture : public ::testing::Test {
 public:
-
   void testfixedpoint(
-    const BindingTest& binding,
-    const BindingTest& modbus,
-    const BindingTest& access) {
+    uint8_t count,
+    uint16_t startaddress,
+    uint16_t length) {
 
-    FixedPointType value;
-    FixedPointArray fixedpoints;
+    gatum::FixedPointType value;
+    gatum::FixedPointArray fixedpoints;
+    gatum::create(fixedpoints, count);
+
     double doublevalue, doublefixedpoint;
-    create(fixedpoints, binding.Count);
 
-    size_t fixedpointsize = sizeof(FixedPointType);
-    EXPECT_EQ(4, fixedpointsize);
-    size_t fixedpointwords = fixedpointsize / 2;
-    EXPECT_EQ(2, fixedpointwords);
-    uint8_t wordcount = modbus.Count * static_cast<uint8_t>(fixedpointwords);
+    uint8_t size = gatub::size<gatum::FixedPointType, uint16_t, uint8_t>();
+    EXPECT_EQ(2, size);
+    
+    gatlb::reference<gatum::FixedPointType> binding;
+    uint16_t result = gatub::create(
+      binding,
+      fixedpoints,
+      startaddress,
+      count,
+      size);
 
+    uint8_t wordcount = count * size;
     Modbus slave(0, wordcount, Modbus::Pattern::FixedPoints);
 
-    uint16_t address = binding.Start;
+    uint8_t offset, from, to, index = 0;
 
-    uint8_t offset, count, index = 1;
-    FixedPointType* pointer = fixedpoints.get();
-    gatl::modbus::Bindings<FixedPointType> bindings;
-    gatl::modbus::create(bindings, binding.Count, address, pointer++);
-    for (size_t i = 1; i < binding.Count; i++) {
-      gatl::modbus::add(bindings, index, address, pointer++);
-    }
-
-    gatl::modbus::two::assign(bindings, slave, access.Start, access.Count);
-
-    count = gatl::modbus::range(
-      bindings,
-      access.Start,
-      access.Count,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
-      value = gatl::utility::number::part::combine<uint16_t, FixedPointType>(
+    gatlm::two::assign(binding, slave, startaddress, count, from, to);
+    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    while (from < to) {
+      value = gatlunp::combine<uint16_t, gatum::FixedPointType>(
         slave.Registers[offset],
         slave.Registers[offset + 1]);
       doublevalue = (double)value;
-      doublefixedpoint = (double)(fixedpoints[index++]);
+      doublefixedpoint = (double)(fixedpoints[from++]);
       EXPECT_DOUBLE_EQ(doublevalue, doublefixedpoint);
       offset += 2;
     }
 
-    reverse<FixedPointType>(fixedpoints, binding.Count);
+    gatum::pattern::reverse(fixedpoints, count);
 
-    gatl::modbus::two::access(bindings, slave, access.Start, access.Count);
-
-    count = gatl::modbus::range(
-      bindings,
-      access.Start,
-      access.Count,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
-      value = gatl::utility::number::part::combine<uint16_t, FixedPointType>(
+    gatlm::two::access(binding, slave, startaddress, count);
+    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    while (from < to) {
+      value = gatlunp::combine<uint16_t, gatum::FixedPointType>(
         slave.Registers[offset],
         slave.Registers[offset + 1]);
       doublevalue = (double)value;
-      doublefixedpoint = (double)(fixedpoints[index++]);
+      doublefixedpoint = (double)(fixedpoints[from++]);
       EXPECT_DOUBLE_EQ(doublevalue, doublefixedpoint);
       offset += 2;
     }
 
-    gatl::modbus::clean(bindings);
+    gatlb::testing::clean(binding);
   }
   void testfloat(
-    const BindingTest& binding,
-    const BindingTest& modbus,
-    const BindingTest& access) {
+    uint8_t count,
+    uint16_t startaddress,
+    uint16_t length) {
 
     float value;
-    FloatArray floats;
-    create(floats, binding.Count);
+    gatum::FloatArray floats;
+    gatum::create(floats, count);
 
-    size_t floatsize = sizeof(float);
-    EXPECT_EQ(4, floatsize);
-    size_t floatwords = floatsize / 2;
-    EXPECT_EQ(2, floatwords);
-    uint8_t wordcount = modbus.Count * static_cast<uint8_t>(floatwords);
+    uint8_t size = gatub::size<float, uint16_t, uint8_t>();
+    EXPECT_EQ(2, size);
 
+    gatlb::reference<float> binding;
+    uint16_t result = gatub::create(
+      binding,
+      floats,
+      startaddress,
+      count,
+      size);
+
+    uint8_t wordcount = count * size;
     Modbus slave(0, wordcount, Modbus::Pattern::Floats);
 
-    uint16_t address = binding.Start;
+    uint8_t offset, from, to, index = 0;
 
-    uint8_t offset, count, index = 1;
-    float* pointer = floats.get();
-    gatl::modbus::Bindings<float> bindings;
-    gatl::modbus::create(bindings, binding.Count, address, pointer++);
-    for (size_t i = 1; i < binding.Count; i++) {
-      gatl::modbus::add(bindings, index, address, pointer++);
-    }
-
-    gatl::modbus::two::assign(bindings, slave, access.Start, access.Count);
-
-    count = gatl::modbus::range(
-      bindings,
-      access.Start,
-      access.Count,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
-      value = gatl::utility::number::part::combine<uint16_t, float>(
+    gatlm::two::assign(binding, slave, startaddress, count, from, to);
+    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    while (from < to) {
+      value = gatlunp::combine<uint16_t, float>(
         slave.Registers[offset],
         slave.Registers[offset + 1]);
-      EXPECT_FLOAT_EQ(value, floats[index++]);
+      EXPECT_FLOAT_EQ(value, floats[from++]);
       offset += 2;
     }
 
-    reverse(floats, binding.Count);
+    gatum::pattern::reverse(floats, count);
 
-    gatl::modbus::two::access(bindings, slave, access.Start, access.Count);
-
-    count = gatl::modbus::range(
-      bindings,
-      access.Start,
-      access.Count,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
-      value = gatl::utility::number::part::combine<uint16_t, float>(
+    gatlm::two::access(binding, slave, startaddress, count);
+    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    while (from < to) {
+      value = gatlunp::combine<uint16_t, float>(
         slave.Registers[offset],
         slave.Registers[offset + 1]);
-      EXPECT_FLOAT_EQ(value, floats[index++]);
+      EXPECT_FLOAT_EQ(value, floats[from++]);
       offset += 2;
     }
 
-    gatl::modbus::clean(bindings);
+    gatlb::testing::clean(binding);
   }
   void testint32(
     uint8_t count,
@@ -221,168 +138,800 @@ public:
     uint16_t length) {
 
     int32_t value;
-    Int32Array ints;
-    create(ints, count);
+    gatum::Int32Array ints;
+    gatum::create(ints, count);
 
-    size_t intsize = sizeof(int32_t);
-    EXPECT_EQ(4, intsize);
-    size_t intwords = intsize / 2;
-    EXPECT_EQ(2, intwords);
-    uint8_t wordcount = count * static_cast<uint8_t>(intwords);
+    uint8_t size = gatub::size<int32_t, uint16_t, uint8_t>();
+    EXPECT_EQ(2, size);
 
+    gatlb::reference<int32_t> binding;
+    uint16_t result = gatub::create(
+      binding,
+      ints,
+      startaddress,
+      count,
+      size);
+
+    uint8_t wordcount = count * size;
     Modbus slave(0, wordcount, Modbus::Pattern::Int32);
 
-    uint16_t address = 0;
+    uint8_t offset, from, to, index = 0;
 
-    uint8_t offset, index = 1;
-    int32_t* pointer = ints.get();
-    gatl::modbus::Bindings<int32_t> bindings;
-    gatl::modbus::create(bindings, count, address, pointer++);
-    for (size_t i = 1; i < count; i++) {
-      gatl::modbus::add(bindings, index, address, pointer++);
-    }
+    gatlm::two::assign(binding, slave, startaddress, length, from, to);
 
-    gatl::modbus::two::assign(bindings, slave, startaddress, length);
-
-    count = gatl::modbus::range(
-      bindings,
-      startaddress,
-      length,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
+    gatlmd::initialize(binding, startaddress, length, offset, from, to);
+    while (from < to) {
       value = gatl::utility::number::part::combine<uint16_t, int32_t>(
         slave.Registers[offset],
         slave.Registers[offset + 1]);
-      EXPECT_EQ(value, ints[index++]);
+      EXPECT_EQ(value, ints[from++]);
       offset += 2;
     }
 
-    reverse(ints, count);
+    gatum::pattern::reverse(ints, count);
 
-    gatl::modbus::two::access(bindings, slave, startaddress, length);
-
-    count = gatl::modbus::range(
-      bindings,
-      startaddress,
-      length,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
+    gatlm::two::access(binding, slave, startaddress, length);
+    gatlmd::initialize(binding, startaddress, length, offset, from, to);
+    while (from < to) {
       value = gatl::utility::number::part::combine<uint16_t, int32_t>(
         slave.Registers[offset],
         slave.Registers[offset + 1]);
-      EXPECT_EQ(value, ints[index++]);
+      EXPECT_EQ(value, ints[from++]);
       offset += 2;
     }
 
-    gatl::modbus::clean(bindings);
+    gatlb::testing::clean(binding);
   }
   void testholding(
-    const BindingTest& binding,
-    const BindingTest& modbus,
-    const BindingTest& access) {
+    uint8_t count,
+    uint16_t startaddress,
+    uint16_t length) {
     
-    IntegerArray ints;
-    create(ints, binding.Count);
+    gatum::Uint16Array ints;
+    gatum::create(ints, count);
 
-    Modbus slave(0, modbus.Count, Modbus::Pattern::Increase);
+    uint8_t size = 1;
+    gatlb::reference<uint16_t> binding;
+    uint16_t result = gatub::create(
+      binding,
+      ints,
+      startaddress,
+      count,
+      size);
 
-    uint16_t address = binding.Start;
+    Modbus slave(0, count, Modbus::Pattern::Increase);
 
-    uint8_t offset, count, index = 1;
-    uint16_t* pointer = ints.get();
-    gatl::modbus::Bindings<uint16_t> bindings;
-    gatl::modbus::create(bindings, binding.Count, address, pointer++);
-    for (size_t i = 1; i < binding.Count; i++) {
-      gatl::modbus::add(bindings, index, address, pointer++);
+    uint8_t offset, from, to, index = 0;
+
+    gatlm::registers::assign(binding, slave, startaddress, count, from, to);
+    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    while (from < to) {
+      EXPECT_EQ(slave.Registers[offset++], ints[from++]);
     }
 
-    gatl::modbus::registers::assign(
-      bindings,
-      slave,
-      access.Start,
-      access.Count);
+    gatum::pattern::reverse(ints, count);
 
-    count = gatl::modbus::range(
-      bindings,
-      access.Start,
-      access.Count,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
-      EXPECT_EQ(slave.Registers[offset++], ints[index++]);
+    gatlm::registers::access(binding, slave, startaddress, count);
+    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    while (from < to) {
+      EXPECT_EQ(slave.Registers[offset++], ints[from++]);
     }
 
-    reverse(ints, binding.Count);
-
-    gatl::modbus::registers::access(
-      bindings,
-      slave,
-      access.Start,
-      access.Count);
-
-    count = gatl::modbus::range(
-      bindings,
-      access.Start,
-      access.Count,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
-      EXPECT_EQ(slave.Registers[offset++], ints[index++]);
-    }
-
-    gatl::modbus::clean(bindings);
+    gatlb::testing::clean(binding);
   }
   void testcoil(
-    const BindingTest& binding,
-    const BindingTest& modbus,
-    const BindingTest& access) {
+    uint8_t count,
+    uint16_t startaddress,
+    uint16_t length) {
 
-    BooleanArray bits;
-    create(bits, binding.Count);
+    gatum::BooleanArray bits;
+    gatum::create(bits, count);
 
-    Modbus slave(modbus.Count, 0, Modbus::Pattern::TrueFalse);
+    uint8_t size = 1;
+    gatlb::reference<bool> binding;
+    uint16_t result = gatub::create(
+      binding,
+      bits,
+      startaddress,
+      count,
+      size);
 
-    uint16_t address = binding.Start;
+    Modbus slave(count, 0, Modbus::Pattern::TrueFalse);
     
-    uint8_t offset, count, index = 1;
-    bool* pointer = bits.get();
-    gatl::modbus::Bindings<bool> bindings;
-    gatl::modbus::create(bindings, binding.Count, address, pointer++);
-    for (size_t i = 1; i < binding.Count; i++) {
-      gatl::modbus::add(bindings, index, address, pointer++);
+    uint8_t offset, from, to, index = 0;
+
+    gatlm::coil::assign(binding, slave, startaddress, count, from, to);
+    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    while (from < to) {
+      EXPECT_EQ(slave.Coils[offset++], bits[from++]);
     }
 
-    gatl::modbus::coil::assign(bindings, slave, access.Start, access.Count);
+    gatum::transform(bits, count);
 
-    count = gatl::modbus::range(
-      bindings,
-      access.Start,
-      access.Count,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
-      EXPECT_EQ(slave.Coils[offset++], bits[index++]);
+    gatlm::coil::access(binding, slave, startaddress, count);
+    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    while (from < to) {
+      EXPECT_EQ(slave.Coils[offset++], bits[from++]);
     }
 
-    transform(bits, binding.Count);
+    gatlb::testing::clean(binding);
+  }
+  
+  void testinitialize(uint16_t start, uint16_t lastlength) {
 
-    gatl::modbus::coil::access(bindings, slave, access.Start, access.Count);
+    bool coil_01, coil_02, coil_03, coil_04;
+    bool discrete_01, discrete_02, discrete_03, discrete_04;
+    uint16_t hold_01, hold_02;
+    int32_t hold_03, hold_05;
+    float hold_07, hold_09;
+    gatum::FixedPointType hold_11, hold_13;
 
-    count = gatl::modbus::range(
-      bindings,
-      access.Start,
-      access.Count,
-      index,
-      offset);
-    for (size_t i = 0; i < count; i++) {
-      EXPECT_EQ(slave.Coils[offset++], bits[index++]);
+    //uint8_t offset, from, to;
+
+    gatl::binding::reference<bool> coil_binding;
+    gatl::binding::reference<bool> discrete_binding;
+    gatl::binding::reference<uint16_t> uint16_binding;
+    gatl::binding::reference<int32_t> int32_binding;
+    gatl::binding::reference<float> float_binding;
+    gatl::binding::reference<gatum::FixedPointType> fixed_binding;
+
+    uint8_t size;
+    uint16_t address;
+
+    size = 1;
+    address = 0x0000;
+    address = gatub::createfour(
+      coil_binding, address, size,
+      &coil_01, &coil_02, &coil_03, &coil_04);
+    EXPECT_EQ(0x0004, address);
+    address = 0x0000;
+    address = gatub::createfour(discrete_binding, address, size,
+      &discrete_01, &discrete_02, &discrete_03, &discrete_04);
+    EXPECT_EQ(0x0004, address);
+
+    address = 0x0000;
+    address = gatub::createtwo(
+      uint16_binding, address, size,
+      &hold_01, &hold_02);
+    EXPECT_EQ(0x0002, address);
+    size = 2;
+    address = gatub::createtwo(
+      int32_binding, address, size,
+      &hold_03, &hold_05);
+    EXPECT_EQ(0x0006, address);
+    address = gatub::createtwo(
+      float_binding, address, size,
+      &hold_07, &hold_09);
+    EXPECT_EQ(0x000a, address);
+    address = gatub::createtwo(
+      fixed_binding, address, size,
+      &hold_11, &hold_13);
+    EXPECT_EQ(0x000e, address);
+
+    //gatl::modbus::detail::initialize(coil_bindings, start, lastlength, offset, from, to);
+
+    gatlb::testing::clean(coil_binding);
+    gatlb::testing::clean(discrete_binding);
+    gatlb::testing::clean(uint16_binding);
+    gatlb::testing::clean(int32_binding);
+    gatlb::testing::clean(float_binding);
+    gatlb::testing::clean(fixed_binding);
+  }
+  
+  void testinitialize(
+    uint16_t start,       // Start address for the modbus function
+    uint16_t length,      // Length for the modbus function
+    uint16_t first,       // Fist address in the binding
+    uint8_t count,       // Number of bindings
+    uint8_t size,         // Size for each binding
+    uint8_t& offset,      // Offset in the modbus buffer
+    uint8_t& from,        // First binding index
+    uint8_t& to) {        // Last binding index + 1
+    uint8_t index = 0;
+    offset = 0;
+    from = 1;
+    to = 0;
+    switch (size) {
+    case 0: {
+      size = 1;
+      gatum::BooleanArray bits;
+      gatum::create(bits, count);
+      uint16_t address = first;
+      gatl::binding::reference<bool> binding;
+      address = gatub::create(
+        binding,
+        bits,
+        address,
+        count,
+        size);
+      EXPECT_EQ(first + count, address);
+
+      gatl::modbus::detail::initialize(
+        binding,
+        start,
+        length,
+        offset,
+        from,
+        to);
+      break;
     }
+    case 1: {
+      gatum::Uint16Array ints;
+      gatum::create(ints, count);
+      uint16_t address = first;
+      gatl::binding::reference<uint16_t> binding;
+      address = gatub::create(
+        binding,
+        ints,
+        address,
+        count,
+        size);
+      EXPECT_EQ(first + count, address);
 
-    gatl::modbus::clean(bindings);
+      gatl::modbus::detail::initialize(
+        binding,
+        start,
+        length,
+        offset,
+        from,
+        to);
+      break;
+    }
+    case 2: {
+      gatum::FloatArray floats;
+      gatum::create(floats, count);
+      uint16_t address = first;
+      gatl::binding::reference<float> binding;
+      address = gatub::create(
+        binding,
+        floats,
+        address,
+        count,
+        size);
+      EXPECT_EQ(first + (count * size), address);
+
+      gatl::modbus::detail::initialize(
+        binding,
+        start,
+        length,
+        offset,
+        from,
+        to);
+      break;
+    }
+    }
+  }
+
+  void conceptmethod1(
+    uint16_t start,       // Start address for the modbus function
+    uint16_t length,      // Length for the modbus function
+    uint16_t first,       // Fist address in the binding
+    uint16_t count,       // Number of bindings
+    uint8_t size,         // Size for each binding
+    uint8_t& offset,      // Offset in the modbus buffer
+    uint8_t& from,        // First binding index
+    uint8_t& number) {    // Number of binding covered by the function
+    number = 0;
+
+    uint16_t end = start + length - 1;        // End address for the modbus
+    uint16_t last = first - 1 + count * size; // Last address for the binging
+    uint16_t delta;
+
+    if (first >= start) {
+      if (first <= end) {
+        //    smmmme
+        //    fbbbbbbl
+        //
+        //    smmmme
+        //      fbbbbl
+        from = 0;
+        offset = first - start;
+        delta = 1 + end - first;
+        number = delta / size;
+      }
+    }
+    else {
+      if (last >= start) {
+        //      smmmme
+        //    fbbbbl
+        offset = 0;
+        delta = start - first;
+        from = delta / size;
+        number = 1 + (last - start) / size;
+        if (delta % size > 0) {
+          from++;
+          number--;
+        }
+      }
+    }
+  }
+
+  void conceptmethod2(
+    const uint16_t& start,        // Start address for the modbus function
+    const uint16_t& length,       // Length for the modbus function
+    const uint16_t& first,        // Fist address in the binding
+    const uint16_t& count,        // Number of bindings
+    const uint8_t& size,          // Size for each binding
+    uint8_t& offset,              // Offset in the modbus buffer
+    uint8_t& from,                // First binding index
+    uint8_t& number) {            // Number of binding covered by the function
+    number = 0;
+
+    if (first >= start) {
+      if (first < (start + length)) {
+        //    smmmme
+        //    fbbbbbbl
+        //
+        //    smmmme
+        //      fbbbbl
+        from = 0;
+        offset = first - start;
+        number = (start + length - first) / size;
+      }
+    } else if ((first + count * size) > start) {
+      //      smmmme
+      //    fbbbbl
+      offset = 0;
+      from = ((start - first) % size > 0) + (start - first) / size;
+      number = ((start - first) % size == 0) +
+        ((first - 1 + count * size) - start) / size;
+    }
+  }
+
+  void testconcept(
+    uint16_t start,       // Start address for the modbus function
+    uint16_t length,      // Length for the modbus function
+    uint16_t first,       // Fist address in the binding
+    uint16_t count,       // Number of bindings
+    uint8_t size,         // Size for each binding
+    uint8_t& offset,      // Offset in the modbus buffer
+    uint8_t& from,        // First binding index
+    uint8_t& number) {    // Number of binding covered by the function
+    conceptmethod2(start, length, first, count, size, offset, from, number);
   }
 };
+
+TEST_F(GatlModbusFixture, InitializeOneRegistry) {
+  uint16_t start;       // Start address for the modbus function
+  uint16_t length;      // Length for the modbus function
+  uint16_t first;       // Fist address in the binding
+  uint16_t count;       // Number of bindings
+  uint8_t size;         // Size for each binding (number of registry)
+  uint8_t offset;       // Offset in the modbus buffer
+  uint8_t from;         // First binding index
+  uint8_t to;           // Last binding index + 1
+  uint8_t i = 0;
+
+  // smmmme
+  // fbbbbl
+  start = 0; length = 8; first = 0; count = 8; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(8, to);
+  start = 0; length = 8; first = 0; count = 8; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(8, to);
+
+  // smmmme
+  //   fbbbbl
+  start = 0; length = 8; first = 2; count = 8; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(2, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(6, to);
+  start = 0; length = 8; first = 2; count = 8; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(2, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(6, to);
+
+  // smmmme
+  //      fbbbbl
+  start = 0; length = 4; first = 3; count = 8; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(3, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(1, to);
+  start = 0; length = 4; first = 3; count = 8; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(3, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(1, to);
+
+  // smmmme
+  //       fbbbbl
+  start = 0; length = 4; first = 4; count = 8; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+  start = 0; length = 4; first = 4; count = 8; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+
+  // smmmme
+  //         fbbbbl
+  start = 0; length = 4; first = 6; count = 8; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+  start = 0; length = 4; first = 6; count = 8; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+
+  //   smmmme
+  // fbbbbl
+  start = 2; length = 8; first = 0; count = 8; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(2, from);
+  EXPECT_EQ(8, to);
+  start = 2; length = 8; first = 0; count = 8; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(2, from);
+  EXPECT_EQ(8, to);
+
+  //      smmmme
+  // fbbbbl
+  start = 3; length = 4; first = 0; count = 4; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(3, from);
+  EXPECT_EQ(4, to);
+  start = 3; length = 4; first = 0; count = 4; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(3, from);
+  EXPECT_EQ(4, to);
+
+  //       smmmme
+  // fbbbbl
+  start = 4; length = 4; first = 0; count = 4; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+  start = 4; length = 4; first = 0; count = 4; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+
+  //         smmmme
+  // fbbbbl
+  start = 6; length = 4; first = 0; count = 4; size = 0;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+  start = 6; length = 4; first = 0; count = 4; size = 1;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+}
+
+TEST_F(GatlModbusFixture, InitializeTwoRegistry) {
+  uint16_t start;       // Start address for the modbus function
+  uint16_t length;      // Length for the modbus function
+  uint16_t first;       // Fist address in the binding
+  uint16_t count;       // Number of bindings
+  uint8_t size;         // Size for each binding (number of registry)
+  uint8_t offset;       // Offset in the modbus buffer
+  uint8_t from;         // First binding index
+  uint8_t to;           // Last binding index + 1
+  uint8_t i = 0;
+
+  // smmmme
+  // fbbbbl
+  start = 0; length = 8; first = 0; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(4, to);
+
+  // smmmme
+  //  fbbbbl
+  start = 0; length = 8; first = 1; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(1, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(3, to);
+
+  // smmmme
+    //   fbbbbl
+  start = 0; length = 8; first = 2; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(2, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(3, to);
+
+  // smmmme
+  //    fbbbbl
+  start = 0; length = 8; first = 3; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(3, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(2, to);
+
+  // smmmme
+  //    fbbbbl
+  start = 0; length = 8; first = 4; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(4, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(2, to);
+
+  // smmmme
+  //     fbbbbl
+  start = 0; length = 8; first = 6; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(6, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(1, to);
+
+  // smmmme
+  //      fbbbbl
+  start = 0; length = 8; first = 7; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+
+  // smmmme
+  //       fbbbbl
+  start = 0; length = 8; first = 8; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+
+  // smmmme
+  //        fbbbbl
+  start = 0; length = 8; first = 9; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_TRUE(from > to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+
+  //  smmmme
+  // fbbbbl
+  start = 1; length = 8; first = 0; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(1, from);
+  EXPECT_EQ(4, to);
+
+  //   smmmme
+  // fbbbbl
+  start = 2; length = 8; first = 0; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(1, from);
+  EXPECT_EQ(4, to);
+
+  //     smmmme
+  // fbbbbl
+  start = 6; length = 8; first = 0; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(3, from);
+  EXPECT_EQ(4, to);
+
+  //      smmmme
+  // fbbbbl
+  start = 7; length = 8; first = 0; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+
+  //       smmmme
+  // fbbbbl
+  start = 8; length = 8; first = 0; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+
+  //        smmmme
+  // fbbbbl
+  start = 9; length = 8; first = 0; count = 4; size = 2;
+  testinitialize(start, length, first, count, size, offset, from, to);
+  while (from < to) { i++; from++; }
+  EXPECT_EQ(0, i);
+}
+
+TEST_F(GatlModbusFixture, ConceptOneRegistry) {
+  uint16_t start;       // Start address for the modbus function
+  uint16_t length;      // Length for the modbus function
+  uint16_t first;       // Fist address in the binding
+  uint16_t count;       // Number of bindings
+  uint8_t size;         // Size for each binding (number of registry)
+  uint8_t offset;       // Offset in the modbus buffer
+  uint8_t from;         // First binding index
+  uint8_t number;       // Number of binding covered by the function
+
+  // smmmme
+  // fbbbbl
+  start = 0; length = 8; first = 0; count = 8; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(8, number);
+
+  // smmmme
+  //   fbbbbl
+  start = 0; length = 8; first = 2; count = 8; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(2, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(6, number);
+
+  // smmmme
+  //      fbbbbl
+  start = 0; length = 4; first = 3; count = 8; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(3, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(1, number);
+
+  // smmmme
+  //       fbbbbl
+  start = 0; length = 4; first = 4; count = 8; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+
+  // smmmme
+  //         fbbbbl
+  start = 0; length = 4; first = 6; count = 8; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+
+  //   smmmme
+  // fbbbbl
+  start = 2; length = 8; first = 0; count = 8; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(2, from);
+  EXPECT_EQ(6, number);
+
+  //      smmmme
+  // fbbbbl
+  start = 3; length = 4; first = 0; count = 4; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(3, from);
+  EXPECT_EQ(1, number);
+
+  //       smmmme
+  // fbbbbl
+  start = 4; length = 4; first = 0; count = 4; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+
+  //         smmmme
+  // fbbbbl
+  start = 6; length = 4; first = 0; count = 4; size = 1;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+}
+
+TEST_F(GatlModbusFixture, ConceptTwoRegistry) {
+  uint16_t start;       // Start address for the modbus function
+  uint16_t length;      // Length for the modbus function
+  uint16_t first;       // Fist address in the binding
+  uint16_t count;       // Number of bindings
+  uint8_t size;         // Size for each binding (number of registry)
+  uint8_t offset;       // Offset in the modbus buffer
+  uint8_t from;         // First binding index
+  uint8_t number;       // Number of binding covered by the function
+
+  // smmmme
+  // fbbbbl
+  start = 0; length = 8; first = 0; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(4, number);
+
+  // smmmme
+  //  fbbbbl
+  start = 0; length = 8; first = 1; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(1, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(3, number);
+
+  // smmmme
+  //   fbbbbl
+  start = 0; length = 8; first = 2; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(2, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(3, number);
+
+  // smmmme
+  //    fbbbbl
+  start = 0; length = 8; first = 3; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(3, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(2, number);
+
+  // smmmme
+  //    fbbbbl
+  start = 0; length = 8; first = 4; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(4, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(2, number);
+
+  // smmmme
+  //     fbbbbl
+  start = 0; length = 8; first = 6; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(6, offset);
+  EXPECT_EQ(0, from);
+  EXPECT_EQ(1, number);
+
+  // smmmme
+  //      fbbbbl
+  start = 0; length = 8; first = 7; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+
+  // smmmme
+  //       fbbbbl
+  start = 0; length = 8; first = 8; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+
+  // smmmme
+  //        fbbbbl
+  start = 0; length = 8; first = 9; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+
+  //  smmmme
+  // fbbbbl
+  start = 1; length = 8; first = 0; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(1, from);
+  EXPECT_EQ(3, number);
+
+  //   smmmme
+  // fbbbbl
+  start = 2; length = 8; first = 0; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(1, from);
+  EXPECT_EQ(3, number);
+
+  //     smmmme
+  // fbbbbl
+  start = 6; length = 8; first = 0; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, offset);
+  EXPECT_EQ(3, from);
+  EXPECT_EQ(1, number);
+
+  //      smmmme
+  // fbbbbl
+  start = 7; length = 8; first = 0; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+
+  //       smmmme
+  // fbbbbl
+  start = 8; length = 8; first = 0; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+
+  //        smmmme
+  // fbbbbl
+  start = 9; length = 8; first = 0; count = 4; size = 2;
+  testconcept(start, length, first, count, size, offset, from, number);
+  EXPECT_EQ(0, number);
+}
 
 TEST_F(GatlModbusFixture, MixedBinding) {
   /*
@@ -441,123 +990,110 @@ TEST_F(GatlModbusFixture, MixedBinding) {
   uint16_t input_03, input_04, hold_13, hold_14;
   int32_t input_05, input_07, hold_15, hold_17;
   float input_16, input_18, hold_06, hold_08;
-  FixedPointType input_12, input_14, hold_02, hold_04;
+  gatum::FixedPointType input_12, input_14, hold_02, hold_04;
 
   Modbus slave(8, 20, 8);
 
-  gatl::modbus::Bindings<bool> coil_bindings_01, coil_bindings_02;
-  gatl::modbus::Bindings<bool> discrete_bindings_01, discrete_bindings_02;
-  gatl::modbus::Bindings<uint16_t> input_uint16_bindings;
-  gatl::modbus::Bindings<int32_t> input_int32_bindings;
-  gatl::modbus::Bindings<float> input_float_bindings;
-  gatl::modbus::Bindings<FixedPointType> input_fixed_bindings;
-  gatl::modbus::Bindings<uint16_t> hold_uint16_bindings;
-  gatl::modbus::Bindings<int32_t> hold_int32_bindings;
-  gatl::modbus::Bindings<float> hold_float_bindings;
-  gatl::modbus::Bindings<FixedPointType> hold_fixed_bindings;
+  gatlb::reference<bool> coil_binding_01, coil_binding_02;
+  gatlb::reference<bool> discrete_binding_01, discrete_binding_02;
+  gatlb::reference<uint16_t> input_uint16_binding;
+  gatlb::reference<int32_t> input_int32_binding;
+  gatlb::reference<float> input_float_binding;
+  gatlb::reference<gatum::FixedPointType> input_fixed_binding;
+  gatlb::reference<uint16_t> hold_uint16_binding;
+  gatlb::reference<int32_t> hold_int32_binding;
+  gatlb::reference<float> hold_float_binding;
+  gatlb::reference<gatum::FixedPointType> hold_fixed_binding;
 
+  uint8_t size;
   uint16_t address;
-  uint8_t index;
 
-  index = 1;
+  size = 1;
   address = 0x0002;
-  gatl::modbus::create(coil_bindings_01, 2, address, &coil_03);
-  gatl::modbus::add(coil_bindings_01, index, address, &coil_04);
+  gatub::createtwo(
+    coil_binding_01, address, size,
+    &coil_03, &coil_04);
 
-  index = 1;
   address = 0x0005;
-  gatl::modbus::create(coil_bindings_02, 3, address, &coil_06);
-  gatl::modbus::add(coil_bindings_02, index, address, &coil_07);
-  gatl::modbus::add(coil_bindings_02, index, address, &coil_08);
+  gatub::createthree(
+    coil_binding_02, address, size,
+    &coil_06, &coil_07, &coil_08);
 
-  index = 1;
   address = 0x0002;
-  gatl::modbus::create(discrete_bindings_01, 2, address, &discrete_03);
-  gatl::modbus::add(discrete_bindings_01, index, address, &discrete_04);
+  gatub::createtwo(
+    discrete_binding_01, address, size,
+    &discrete_03, &discrete_04);
 
-  index = 1;
   address = 0x0006;
-  gatl::modbus::create(discrete_bindings_02, 2, address, &discrete_07);
-  gatl::modbus::add(discrete_bindings_02, index, address, &discrete_08);
+  gatub::createtwo(
+    discrete_binding_02, address, size,
+    &discrete_07, &discrete_08);
 
-  index = 1;
   address = 0x0002;
-  gatl::modbus::create(input_uint16_bindings, 2, address, &input_03);
-  gatl::modbus::add(input_uint16_bindings, index, address, &input_04);
+  gatub::createtwo(
+    input_uint16_binding, address, size,
+    &input_03, &input_04);
 
-  index = 1;
+  size = 2;
   address = 0x0004;
-  gatl::modbus::create(input_int32_bindings, 2, address, &input_05);
-  gatl::modbus::add(input_int32_bindings, index, address, &input_07);
+  gatub::createtwo(
+    input_int32_binding, address, size,
+    &input_05, &input_07);
 
-  index = 1;
   address = 0x000b;
-  gatl::modbus::create(input_fixed_bindings, 2, address, &input_12);
-  gatl::modbus::add(input_fixed_bindings, index, address, &input_14);
+  gatub::createtwo(
+    input_fixed_binding, address, size,
+    &input_12, &input_14);
 
-  index = 1;
   address = 0x000f;
-  gatl::modbus::create(input_float_bindings, 2, address, &input_16);
-  gatl::modbus::add(input_float_bindings, index, address, &input_18);
+  gatub::createtwo(
+    input_float_binding, address, size,
+    &input_16, &input_18);
 
-  index = 1;
   address = 0x0001;
-  gatl::modbus::create(hold_fixed_bindings, 2, address, &hold_02);
-  gatl::modbus::add(hold_fixed_bindings, index, address, &hold_04);
+  gatub::createtwo(
+    hold_fixed_binding, address, size,
+    &hold_02, &hold_04);
 
-  index = 1;
   address = 0x0005;
-  gatl::modbus::create(hold_float_bindings, 2, address, &hold_06);
-  gatl::modbus::add(hold_float_bindings, index, address, &hold_08);
+  gatub::createtwo(
+    hold_float_binding, address, size,
+    &hold_06, &hold_08);
 
-  index = 1;
+  size = 1;
   address = 0x000c;
-  gatl::modbus::create(hold_uint16_bindings, 2, address, &hold_13);
-  gatl::modbus::add(hold_uint16_bindings, index, address, &hold_14);
+  gatub::createtwo(
+    hold_uint16_binding, address, size,
+    &hold_13, &hold_14);
 
-  index = 1;
+  size = 2;
   address = 0x000e;
-  gatl::modbus::create(hold_int32_bindings, 2, address, &hold_15);
-  gatl::modbus::add(hold_int32_bindings, index, address, &hold_17);
+  gatub::createtwo(
+    hold_int32_binding, address, size,
+    &hold_15, &hold_17);
 
-  gatl::modbus::coil::assign(coil_bindings_01, slave, 0, 6);
+  //gatl::modbus::coil::assign(coil_binding_01, slave, 0, 6);
 
-  gatl::modbus::clean(coil_bindings_01);
-  gatl::modbus::clean(coil_bindings_02);
-  gatl::modbus::clean(discrete_bindings_01);
-  gatl::modbus::clean(discrete_bindings_02);
-  gatl::modbus::clean(input_uint16_bindings);
-  gatl::modbus::clean(input_int32_bindings);
-  gatl::modbus::clean(input_float_bindings);
-  gatl::modbus::clean(input_fixed_bindings);
-  gatl::modbus::clean(hold_uint16_bindings);
-  gatl::modbus::clean(hold_int32_bindings);
-  gatl::modbus::clean(hold_float_bindings);
-  gatl::modbus::clean(hold_fixed_bindings);
+  gatlb::testing::clean(coil_binding_01);
+  gatlb::testing::clean(coil_binding_02);
+  gatlb::testing::clean(discrete_binding_01);
+  gatlb::testing::clean(discrete_binding_02);
+  gatlb::testing::clean(input_uint16_binding);
+  gatlb::testing::clean(input_int32_binding);
+  gatlb::testing::clean(input_float_binding);
+  gatlb::testing::clean(input_fixed_binding);
+  gatlb::testing::clean(hold_uint16_binding);
+  gatlb::testing::clean(hold_int32_binding);
+  gatlb::testing::clean(hold_float_binding);
+  gatlb::testing::clean(hold_fixed_binding);
 }
 
 TEST_F(GatlModbusFixture, FixedPointBinding) {
-  BindingTest binding, modbus, access;
-
-  binding.Start = 0;
-  binding.Count = 6;
-  modbus.Start = 0;
-  modbus.Count = 6;
-  access.Start = 0;
-  access.Count = 12;
-  testfixedpoint(binding, modbus, access);
+  testfixedpoint(6, 0, 12);
 }
 
 TEST_F(GatlModbusFixture, FloatBinding) {
-  BindingTest binding, modbus, access;
-
-  binding.Start = 0;
-  binding.Count = 6;
-  modbus.Start = 0;
-  modbus.Count = 6;
-  access.Start = 0;
-  access.Count = 12;
-  testfloat(binding, modbus, access);
+  testfloat(6, 0, 12);
 }
 
 TEST_F(GatlModbusFixture, Int32Binding) {
@@ -566,41 +1102,11 @@ TEST_F(GatlModbusFixture, Int32Binding) {
 }
 
 TEST_F(GatlModbusFixture, HoldingBinding) {
-  BindingTest binding, modbus, access;
-
-  binding.Start = 0;
-  binding.Count = 6;
-  modbus.Start = 0;
-  modbus.Count = 6;
-  access.Start = 0;
-  access.Count = 6;
-  testholding(binding, modbus, access);
-
-  binding.Start = 4;
-  binding.Count = 6;
-  modbus.Start = 0;
-  modbus.Count = 10;
-  access.Start = 0;
-  access.Count = 6;
-  testholding(binding, modbus, access);
+  testholding(6, 0, 6);
+  testholding(6, 2, 10);
 }
 
 TEST_F(GatlModbusFixture, CoilBinding) {
-  BindingTest binding, modbus, access;
-  
-  binding.Start = 0;
-  binding.Count = 6;
-  modbus.Start = 0;
-  modbus.Count = 6;
-  access.Start = 0;
-  access.Count = 6;
-  testcoil(binding, modbus, access);
-
-  binding.Start = 4;
-  binding.Count = 6;
-  modbus.Start = 0;
-  modbus.Count = 10;
-  access.Start = 0;
-  access.Count = 6;
-  testcoil(binding, modbus, access);
+  testcoil(6, 0, 6);
+  testcoil(6, 2, 10);
 }
