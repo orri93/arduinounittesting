@@ -82,7 +82,6 @@ void reverse(
     destination[i] = source[--rc];
   }
 }
-
 }
 
 namespace address {
