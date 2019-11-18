@@ -4,6 +4,8 @@
 
 #include <Arduino.h>
 
+#include <EEPROM.h>
+
 #include <gatleeprom.h>
 
 #include <FixedPoints.h>
@@ -47,7 +49,9 @@ public:
       count,
       size);
 
+#ifdef GOS_ATL_USE_ARDUINO_EEPROM
     EEPROMMock* eeprommock = EEPROMMockInstance();
+#endif
 
     gatle::write(binding);
 
@@ -75,7 +79,9 @@ public:
     }
 
     gatlb::testing::clean(binding);
+#ifdef GOS_ATL_USE_ARDUINO_EEPROM
     releaseEEPROMMock();
+#endif
   }
   void testfloat(uint8_t count, int startaddress) {
 
@@ -95,7 +101,9 @@ public:
       count,
       size);
 
+#ifdef GOS_ATL_USE_ARDUINO_EEPROM
     EEPROMMock* eeprommock = EEPROMMockInstance();
+#endif
 
     gatle::write(binding);
 
@@ -123,7 +131,9 @@ public:
     }
 
     gatlb::testing::clean(binding);
+#ifdef GOS_ATL_USE_ARDUINO_EEPROM
     releaseEEPROMMock();
+#endif
   }
   void testint32(uint8_t count, int startaddress) {
 
@@ -143,7 +153,9 @@ public:
       count,
       size);
 
+#ifdef GOS_ATL_USE_ARDUINO_EEPROM
     EEPROMMock* eeprommock = EEPROMMockInstance();
+#endif
 
     gatle::write(binding);
 
@@ -171,7 +183,9 @@ public:
     }
 
     gatlb::testing::clean(binding);
+#ifdef GOS_ATL_USE_ARDUINO_EEPROM
     releaseEEPROMMock();
+#endif
   }
 };
 

@@ -4,12 +4,15 @@ project(ArduinoUnitTesting VERSION 1.0
   DESCRIPTION "FDS Arduino libraries Google unit tests"
   LANGUAGES CXX)
 
-set(arduino_unit_testing_src
+set(arduino_unit_testing_root_include "${CMAKE_CURRENT_SOURCE_DIR}/include")
+
+list(APPEND arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/crc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/pid.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/sort.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/type.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/avrage.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/buffer.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/eeprom.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/modbus.cpp"
@@ -26,18 +29,18 @@ set(arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/max6675"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/sort.cpp")
 
-set(arduino_mock_for_lib_include 
+list(APPEND arduino_mock_for_lib_include 
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/avr"
+#  "${CMAKE_CURRENT_SOURCE_DIR}/include/avr"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/arduinomock"
 # "${CMAKE_CURRENT_SOURCE_DIR}/extern/arduinomock/include/arduino-mock"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googlemock/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googletest/include")
 
-set(arduino_unit_testing_sublibraries_dir
+list(APPEND arduino_unit_testing_sublibraries_dir
   ${CMAKE_CURRENT_SOURCE_DIR}/sublibraries)
 
-set(arduino_mock_include
+list(APPEND arduino_mock_include
   "${arduino_mock_for_lib_include}"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/mock"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/cnl/include"
@@ -46,9 +49,9 @@ set(arduino_mock_include
   "${arduino_unit_testing_sublibraries_dir}/arduinotemplates/src"
   )
 
-set(sublibraries_include ${arduino_mock_include})
+list(APPEND sublibraries_include ${arduino_mock_include})
 
-set(arduino_testing_include
+list(APPEND arduino_testing_include
 # "${Boost_INCLUDE_DIRS}"
   "${arduino_mock_include}"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/avr-libc/libc/stdlib"
@@ -65,13 +68,15 @@ set(arduino_testing_include
   "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinomedian/src"
   "${CMAKE_CURRENT_SOURCE_DIR}/sublibraries/arduinosort/src")
 
-set(arduino_avr_include
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/avr")
+list(APPEND arduino_avr_include
+  "${CMAKE_CURRENT_SOURCE_DIR}/include")
+  #"${CMAKE_CURRENT_SOURCE_DIR}/include/avr")
 
 set(arduino_testing_target_link_libraries
   gtest
   gmock
   gmock_main
+  libavr
   libmock
   libavrlibc
   libgosutils
@@ -133,6 +138,7 @@ set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
 add_subdirectory(extern)
 add_subdirectory(src/mock)
+add_subdirectory(src/mock/avr)
 add_subdirectory(src/utils)
 add_subdirectory(src/avr-libc)
 add_subdirectory(sublibraries/arduinomcp3208)
