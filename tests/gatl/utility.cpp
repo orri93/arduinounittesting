@@ -192,3 +192,80 @@ TEST(GatlUtilTest, NumberPart) {
     gatl::utility::number::part::type::second);
   GOS_ARDUINO_TESTING_EQ_FP(cfpv, fpv);
 }
+
+TEST(GatlUtilTest, Change) {
+  typedef gatl::type::optional<double> OptionalDouble;
+  typedef gatl::type::optional<int16_t> OptionalInteger;
+  typedef std::unique_ptr<OptionalInteger> OptionalIntegerPointer;
+
+  bool result;
+  double d;
+  int16_t i, j, th;
+  OptionalDouble od;
+  OptionalIntegerPointer oip;
+
+  d = 10.0;
+  result = gatl::utility::changed::is(d, od);
+  EXPECT_TRUE(result);
+  EXPECT_FALSE(od.is());
+  
+  od.assign(d);
+  EXPECT_TRUE(od.is());
+  result = gatl::utility::changed::is(d, od);
+  EXPECT_FALSE(result);
+
+  d = 20.0;
+  result = gatl::utility::changed::is(d, od);
+  EXPECT_TRUE(result);
+  
+  i = 93;
+  oip = std::make_unique< OptionalInteger>();
+  EXPECT_FALSE(oip->is());
+  result = gatl::utility::changed::apply::is(i, *oip);
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(oip->is());
+  EXPECT_EQ(i, oip->get());
+  result = gatl::utility::changed::apply::is(i, *oip);
+  EXPECT_FALSE(result);
+  i = 11;
+  result = gatl::utility::changed::apply::is(i, *oip);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(i, oip->get());
+  oip->clear();
+
+  i = 6;
+  th = 10;
+  oip = std::make_unique< OptionalInteger>();
+  result = gatl::utility::changed::apply::is(i, *oip, th);
+  EXPECT_TRUE(result);
+  EXPECT_TRUE(oip->is());
+  EXPECT_EQ(i, oip->get());
+
+  result = gatl::utility::changed::apply::is(i, *oip, th);
+  EXPECT_FALSE(result);
+  EXPECT_EQ(i, oip->get());
+
+  j = i;
+  i += 1;
+  result = gatl::utility::changed::apply::is(i, *oip, th);
+  EXPECT_FALSE(result);
+  EXPECT_NE(i, oip->get());
+  EXPECT_EQ(j, oip->get());
+  i += 4;
+  result = gatl::utility::changed::apply::is(i, *oip, th);
+  EXPECT_FALSE(result);
+  i += 4;
+  result = gatl::utility::changed::apply::is(i, *oip, th);
+  EXPECT_FALSE(result);
+  i += 1;
+  result = gatl::utility::changed::apply::is(i, *oip, th);
+  EXPECT_FALSE(result);
+  i += 1;
+  result = gatl::utility::changed::apply::is(i, *oip, th);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(i, oip->get());
+  EXPECT_NE(j, oip->get());
+  oip->clear();
+
+  od.clear();
+}
