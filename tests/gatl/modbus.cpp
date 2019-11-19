@@ -1110,3 +1110,39 @@ TEST_F(GatlModbusFixture, CoilBinding) {
   testcoil(6, 0, 6);
   testcoil(6, 2, 10);
 }
+
+TEST_F(GatlModbusFixture, OnlyReadingOneRegistry) {
+  typedef int16_t Integer;
+  typedef float Real;
+
+  const uint8_t IntegerSize = 1;
+  const uint8_t RealSize = 2;
+
+  Integer man;
+  Integer hold1, hold3;
+  Real sensor1, setpoint;
+
+  Modbus slave(8, 20, 8);
+
+  gatl::binding::reference<Integer, uint16_t> manual;
+  gatl::binding::reference<Real, uint16_t> real;
+
+  gatl::binding::reference<Integer, uint16_t> output;
+  gatl::binding::reference<Real, uint16_t> sensor;
+  
+  uint16_t address;
+  uint8_t count;
+  bool result;
+
+  count = 1;
+  address = gatl::binding::create<Integer, uint16_t, uint8_t>(
+    manual, 0, count, IntegerSize);
+  gatl::binding::set<Integer, uint16_t, uint8_t>(manual, 0, &man);
+  address = gatl::binding::create<Real, uint16_t, uint8_t>(
+    real, address, 2, RealSize);
+  gatl::binding::set< Real, uint16_t, uint8_t>(real, 0, &sensor1);
+  gatl::binding::set< Real, uint16_t, uint8_t>(real, 1, &setpoint);
+
+  result = gatl::modbus::registers::access(manual, slave, 0, 1);
+  EXPECT_TRUE(result);
+}
