@@ -60,6 +60,7 @@ public:
       uint8_t* pointer = reinterpret_cast<uint8_t*>(binding.pointers[i]);
       for (uint8_t j = 0; j < size; j++) {
         EXPECT_EQ(eeprommock->Buffer[address++], *(pointer++));
+        EXPECT_EQ(eeprommock->Buffer[address++], *(pointer++));
       }
     }
 

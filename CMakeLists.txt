@@ -13,7 +13,7 @@ list(APPEND arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/type.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/avrage.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/buffer.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/eeprom.cpp"
+#  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/eeprom.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/modbus.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/format.cpp"
