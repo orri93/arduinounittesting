@@ -438,32 +438,32 @@ TEST_F(GatlPidFixture, TuneDouble) {
   const double Td = 3.2;
   double ki, kd, ti, td;
 
-  ki = gatl::pid::Ki(Kp, Ti);
+  ki = gatl::pid::time::seconds::Ki(Kp, Ti);
   EXPECT_DOUBLE_EQ(Kp / Ti, ki);
-  kd = gatl::pid::Kd(Kp, Td);
+  kd = gatl::pid::time::seconds::Kd(Kp, Td);
   EXPECT_DOUBLE_EQ(Kp * Td, kd);
 
-  ti = gatl::pid::Ti(Kp, ki);
+  ti = gatl::pid::time::seconds::Ti(Kp, ki);
   EXPECT_DOUBLE_EQ(Ti, ti);
-  td = gatl::pid::Td(Kp, kd);
+  td = gatl::pid::time::seconds::Td(Kp, kd);
   EXPECT_DOUBLE_EQ(Td, td);
 
   gatl::pid::Parameter<double> parameter;
   parameter.Kp = 1.0;
-  parameter.TimeMs = 100;
+  parameter.Time = 100;
   gatl::pid::Tune<double> tune;
   tune.Ki = 0.00556;
   tune.Kd = 12.0;
   gatl::pid::Variable<double> variablea;
-  gatl::pid::tunings(variablea, parameter, tune);
-  double times = parameter.TimeMs / 1000.0;
+  gatl::pid::time::milliseconds::tunings(variablea, parameter, tune);
+  double times = parameter.Time / 1000.0;
   EXPECT_DOUBLE_EQ(tune.Ki * times, variablea.KiTimesTime);
   EXPECT_DOUBLE_EQ(tune.Kd / times, variablea.KdDividedByTime);
   gatl::pid::TimeTune<double> tunetime;
   tunetime.Ti = 180.0;
   tunetime.Td = 12.0;
   gatl::pid::Variable<double> variableb;
-  gatl::pid::tunings(variableb, parameter, tunetime);
+  gatl::pid::time::milliseconds::tunings(variableb, parameter, tunetime);
   EXPECT_NEAR(variablea.KiTimesTime, variableb.KiTimesTime, 0.000001);
   EXPECT_NEAR(variablea.KdDividedByTime, variableb.KdDividedByTime, 0.000001);
 }
