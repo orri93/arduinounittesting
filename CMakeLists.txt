@@ -4,6 +4,17 @@ project(ArduinoUnitTesting VERSION 1.0
   DESCRIPTION "FDS Arduino libraries Google unit tests"
   LANGUAGES CXX)
 
+option(GOS_ARDUINO_UT_BUILD_TESTING "Build Arduino unit tests folder" ON)
+option(GOS_ARDUINO_UT_BUILD_MCP_3208 "Build Arduino MCP 3208" ON)
+option(GOS_ARDUINO_UT_BUILD_MAX_6675 "Build Arduino MAX 6675" ON)
+option(GOS_ARDUINO_UT_BUILD_MAX_31865 "Build Arduino MAX 13865" ON)
+option(GOS_ARDUINO_UT_BUILD_SENSOR "Build Arduino sensor" ON)
+option(GOS_ARDUINO_UT_BUILD_SIN_LED "Build Arduino sin LED" ON)
+option(GOS_ARDUINO_UT_BUILD_FORMAT "Build Arduino format" ON)
+option(GOS_ARDUINO_UT_BUILD_MEDIAN "Build Arduino median" ON)
+option(GOS_ARDUINO_UT_BUILD_SORT "Build Arduino sort" ON)
+option(GOS_ARDUINO_UT_BUILD_TICK "Build Arduino tick" ON)
+
 set(arduino_unit_testing_root_include "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 list(APPEND arduino_unit_testing_src
@@ -37,7 +48,7 @@ list(APPEND arduino_mock_for_lib_include
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googlemock/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/googletest/include")
 
-list(APPEND arduino_unit_testing_sublibraries_dir
+set(arduino_unit_testing_sublibraries_dir
   ${CMAKE_CURRENT_SOURCE_DIR}/sublibraries)
 
 list(APPEND arduino_mock_include
@@ -72,7 +83,7 @@ list(APPEND arduino_avr_include
   "${CMAKE_CURRENT_SOURCE_DIR}/include")
   #"${CMAKE_CURRENT_SOURCE_DIR}/include/avr")
 
-set(arduino_testing_target_link_libraries
+list(APPEND arduino_testing_target_link_libraries
   gtest
   gmock
   gmock_main
@@ -81,18 +92,9 @@ set(arduino_testing_target_link_libraries
   libavrlibc
   libgosutils
   libarduinomock
-  libarduinomcp3208
-  libarduinomax6675
-  libarduinomax31865
-  libarduinosensor
-  libarduinoformat
-  libarduinomedian
-  libarduinosort
   libarduinoextern)
 
 set(gtest_force_shared_crt ON CACHE BOOL "Prefer to use Shared CRT for static")
-
-option(FDS_PACKAGE_TESTS "Build tests" ON)
 
 #add_compile_definitions(P_ON_M=0)
 #add_compile_definitions(P_ON_E=1)
@@ -141,42 +143,53 @@ add_subdirectory(src/mock)
 add_subdirectory(src/mock/avr)
 add_subdirectory(src/utils)
 add_subdirectory(src/avr-libc)
-add_subdirectory(sublibraries/arduinomcp3208)
-add_subdirectory(sublibraries/arduinomax6675)
-add_subdirectory(sublibraries/arduinomax31865)
-add_subdirectory(sublibraries/arduinosensor)
-add_subdirectory(sublibraries/arduinosinled)
-add_subdirectory(sublibraries/arduinoformat)
-add_subdirectory(sublibraries/arduinomedian)
-add_subdirectory(sublibraries/arduinosort)
-add_subdirectory(sublibraries/arduinotick)
+if (GOS_ARDUINO_UT_BUILD_MCP_3208)
+  add_subdirectory(sublibraries/arduinomcp3208)
+  list(APPEND arduino_testing_target_link_libraries
+    libarduinomcp3208)
+endif ()
+if (GOS_ARDUINO_UT_BUILD_MAX_6675)
+  add_subdirectory(sublibraries/arduinomax6675)
+  list(APPEND arduino_testing_target_link_libraries
+    libarduinomax6675)
+endif ()
+if (GOS_ARDUINO_UT_BUILD_MAX_31865)
+  add_subdirectory(sublibraries/arduinomax31865)
+  list(APPEND arduino_testing_target_link_libraries
+    libarduinomax31865)
+endif ()
+if (GOS_ARDUINO_UT_BUILD_SENSOR)
+  add_subdirectory(sublibraries/arduinosensor)
+  list(APPEND arduino_testing_target_link_libraries
+    libarduinosensor)
+endif ()
+if (GOS_ARDUINO_UT_BUILD_SIN_LED)
+  add_subdirectory(sublibraries/arduinosinled)
+endif ()
+if (GOS_ARDUINO_UT_BUILD_FORMAT)
+  add_subdirectory(sublibraries/arduinoformat)
+  list(APPEND arduino_testing_target_link_libraries
+    libarduinoformat)
+endif ()
+if (GOS_ARDUINO_UT_BUILD_MEDIAN)
+  add_subdirectory(sublibraries/arduinomedian)
+  list(APPEND arduino_testing_target_link_libraries
+    libarduinomedian)
+endif ()
+if (GOS_ARDUINO_UT_BUILD_SORT)
+  add_subdirectory(sublibraries/arduinosort)
+  list(APPEND arduino_testing_target_link_libraries
+    libarduinosort)
+endif ()
+if (GOS_ARDUINO_UT_BUILD_TICK)
+  add_subdirectory(sublibraries/arduinotick)
+endif ()
 add_subdirectory(extern/libraries)
 
-if(FDS_PACKAGE_TESTS)
+if (GOS_ARDUINO_UT_BUILD_TESTING)
   enable_testing()
   add_subdirectory(tests)
-endif()
-
-mark_as_advanced(
-  BUILD_GMOCK BUILD_GTEST BUILD_SHARED_LIBS
-  gmock_build_tests gtest_build_samples gtest_build_tests
-  gtest_disable_pthreads gtest_force_shared_crt gtest_hide_internal_symbols)
-
-add_executable(ArduinoUnitTesting ${arduino_unit_testing_src})
-
-#set_target_properties(gtest PROPERTIES FOLDER extern)
-#set_target_properties(gtest_main PROPERTIES FOLDER extern)
-#set_target_properties(gmock PROPERTIES FOLDER extern)
-#set_target_properties(gmock_main PROPERTIES FOLDER extern)
-
-if (MSVC)
-  target_compile_options(ArduinoUnitTesting PRIVATE /wd4244)
-endif()
-
-include_directories(${arduino_testing_include})
-
-target_link_libraries(ArduinoUnitTesting
-  ${arduino_testing_target_link_libraries})
+endif ()
 
 message(STATUS "")
 message(STATUS "Arduino Unit Testing BUILD SUMMARY")

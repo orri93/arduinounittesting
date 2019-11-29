@@ -1,6 +1,0 @@
-{
-  "ExcludedItems" : [
-    "build/",
-    "*.useless_file_ext"
-   ]
-}
