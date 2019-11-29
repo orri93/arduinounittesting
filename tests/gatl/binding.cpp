@@ -97,6 +97,42 @@ public:
 
     gatlb::testing::clean(binding);
   }
+  
+  template<typename T, typename I>
+  void testchange(
+    const uint16_t& start,    // Start address
+    const uint8_t& count,     // Number of references in the binding
+    uint8_t size = 0) {    // The size of each reference
+    bool isresult;
+    if (size == 0) { size = sizeof(T) > 2 ? sizeof(T) / 2 : 1; }
+
+    ::std::unique_ptr<T[]> array;
+    array = ::std::make_unique<T[]>(count);
+    gatum::pattern::range(array, count);
+
+    gatlb::change::aware::reference<T, uint16_t, I> binding;
+    uint16_t address = gatlb::change::aware::create<T, uint16_t, I>(
+      binding, start, count, size);
+    for (uint8_t i = 0; i < count; i++) {
+      isresult = gatl::binding::change::is<T, uint16_t, I>(binding, i);
+      EXPECT_FALSE(isresult);
+    }
+    for (uint8_t i = 0; i < (1 + count / 8); i++) {
+      EXPECT_EQ(0x00, binding.status[i]);
+    }
+    for (uint8_t i = 0; i < count; i++) {
+      gatlb::set<T, uint16_t, I>(binding, i, &(array[i]));
+    }
+
+    for (uint8_t i = 0; i < count; i++) {
+      gatl::binding::change::aware::set<T, uint16_t, I>(binding, i, true);
+      isresult = gatl::binding::change::is<T, uint16_t, I>(binding, i);
+      EXPECT_TRUE(isresult);
+    }
+    for (uint8_t i = 0; i < (count / 8); i++) {
+      EXPECT_EQ(0xff, binding.status[i]);
+    }
+  }
 };
 
 TEST_F(GatlBindingFixture, FixedPointBinding) {
@@ -118,4 +154,8 @@ TEST_F(GatlBindingFixture, Int32Binding) {
   testint32(0, 8, 4);
   testint32(2, 4, 2);
   testint32(2, 2, 4);
+}
+
+TEST_F(GatlBindingFixture, Changed) {
+  testchange<float, uint16_t>(3, 20);
 }

@@ -146,14 +146,14 @@ protected:
     gatl::pid::Parameter<I, O, P> parameter;
     parameter.Setpoint = setpoint;
     parameter.Range = gatl::type::make_range(minimum, maximum);
-    parameter.TimeMs = timems;
+    parameter.Time = timems;
     parameter.Kp = kp;
     parameter.PonE = pone;
     gatl::pid::Tune<P> tune;
     tune.Ki = ki;
     tune.Kd = kd;
     gatl::pid::Variable<V> variable;
-    gatl::pid::tunings(variable, parameter, tune);
+    gatl::pid::time::milliseconds::tunings(variable, parameter, tune);
     gatl::pid::initialize(variable, parameter.Range, input, output);
 
 #ifdef GATL_PID_TUNING_IN_MS
@@ -259,14 +259,14 @@ protected:
     gatl::pid::Parameter<I, O, P> parameter;
     parameter.Setpoint = setpoint;
     parameter.Range = gatl::type::make_range(minimum, maximum);
-    parameter.TimeMs = timems;
+    parameter.Time = timems;
     parameter.Kp = kp;
     parameter.PonE = pone;
     gatl::pid::Tune<P> tune;
     tune.Ki = ki;
     tune.Kd = kd;
     gatl::pid::Variable<V> variable;
-    gatl::pid::tunings(variable, parameter, tune);
+    gatl::pid::time::milliseconds::tunings(variable, parameter, tune);
     gatl::pid::initialize(variable, parameter.Range, input, output);
 
 #ifdef GATL_PID_TUNING_IN_MS
