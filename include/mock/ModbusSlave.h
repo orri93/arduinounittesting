@@ -123,11 +123,22 @@ public:
   BitBuffer Discretes;
   RegisterBuffer Registers;
 
-private:
   void createcoils(const size_t& coilcount);
   void creatediscretes(const size_t& discretecount);
   void createregisters(const size_t& registercount);
   void createpattern(const Pattern& pattern);
+
+  template<typename T>
+  void setregisters(const size_t& address, T& value) {
+    uint16_t regvalue;
+    size_t registerscount = sizeof(T) > 2 ? sizeof(T) / 2 : 1;
+    char* pointer = reinterpret_cast<char*>(&value);
+    for (size_t r = 0; r < registerscount; r++) {
+      ::memcpy((void*)(&regvalue), pointer, 2);
+      Registers[r] = regvalue;
+      pointer += 2;
+    }
+  }
 };
 
 #endif
