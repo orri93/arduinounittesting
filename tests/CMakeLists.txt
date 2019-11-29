@@ -2,7 +2,9 @@
 
 #find_package(Boost 1.70.0 COMPONENTS boost)
 
-add_executable(executegtests ${arduino_unit_testing_src})
+set(executegtests_target executegtests)
+
+add_executable(${executegtests_target} ${arduino_unit_testing_src})
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -10,12 +12,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_PLATFORM_INDEPENDENT_CODE ON)
 
 if (MSVC)
-  target_compile_options(executegtests PRIVATE /wd4244)
+  target_compile_options(${executegtests_target} PRIVATE /wd4244)
 endif()
 
-include_directories(${arduino_testing_include})
+target_include_directories(${executegtests_target} PRIVATE
+  ${arduino_testing_include})
 
-target_link_libraries(executegtests
+target_link_libraries(${executegtests_target}
   ${arduino_testing_target_link_libraries})
 
 #gtest_add_tests(TARGET tests TEST_PREFIX old:)

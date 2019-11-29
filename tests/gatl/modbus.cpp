@@ -1,4 +1,5 @@
 #include <memory>
+#include <mutex>
 
 #include <gtest/gtest.h>
 
@@ -22,12 +23,28 @@ namespace gatlb = ::gos::atl::binding;
 
 namespace gatl = ::gos::atl;
 namespace gatlm = ::gos::atl::modbus;
-namespace gatlmd = ::gos::atl::modbus::detail;
+namespace gatlmb = ::gos::atl::modbus::binding;
+namespace gatlmbd = ::gos::atl::modbus::binding::detail;
 
 namespace gatlunp = ::gos::atl::utility::number::part;
 
 class GatlModbusFixture : public ::testing::Test {
 public:
+  void SetUp() override {
+    arduinomock = arduinoMockInstance();
+    serial = serialMockInstance();
+  }
+
+  void TearDown() override {
+    releaseSerialMock();
+    releaseArduinoMock();
+  }
+
+  ArduinoMock* arduinomock;
+  HardwareSerialMock* serial;
+
+  std::mutex mutex;
+
   void testfixedpoint(
     uint8_t count,
     uint16_t startaddress,
@@ -55,8 +72,8 @@ public:
 
     uint8_t offset, from, to, index = 0;
 
-    gatlm::two::assign(binding, slave, startaddress, count, from, to);
-    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    gatlmb::two::assign(binding, slave, startaddress, count, from, to);
+    gatlmbd::initialize(binding, startaddress, count, offset, from, to);
     while (from < to) {
       value = gatlunp::combine<uint16_t, gatum::FixedPointType>(
         slave.Registers[offset],
@@ -69,8 +86,8 @@ public:
 
     gatum::pattern::reverse(fixedpoints, count);
 
-    gatlm::two::access(binding, slave, startaddress, count);
-    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    gatlmb::two::access(binding, slave, startaddress, count);
+    gatlmbd::initialize(binding, startaddress, count, offset, from, to);
     while (from < to) {
       value = gatlunp::combine<uint16_t, gatum::FixedPointType>(
         slave.Registers[offset],
@@ -108,8 +125,8 @@ public:
 
     uint8_t offset, from, to, index = 0;
 
-    gatlm::two::assign(binding, slave, startaddress, count, from, to);
-    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    gatlmb::two::assign(binding, slave, startaddress, count, from, to);
+    gatlmbd::initialize(binding, startaddress, count, offset, from, to);
     while (from < to) {
       value = gatlunp::combine<uint16_t, float>(
         slave.Registers[offset],
@@ -120,8 +137,8 @@ public:
 
     gatum::pattern::reverse(floats, count);
 
-    gatlm::two::access(binding, slave, startaddress, count);
-    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    gatlmb::two::access(binding, slave, startaddress, count);
+    gatlmbd::initialize(binding, startaddress, count, offset, from, to);
     while (from < to) {
       value = gatlunp::combine<uint16_t, float>(
         slave.Registers[offset],
@@ -157,9 +174,9 @@ public:
 
     uint8_t offset, from, to, index = 0;
 
-    gatlm::two::assign(binding, slave, startaddress, length, from, to);
+    gatlmb::two::assign(binding, slave, startaddress, length, from, to);
 
-    gatlmd::initialize(binding, startaddress, length, offset, from, to);
+    gatlmbd::initialize(binding, startaddress, length, offset, from, to);
     while (from < to) {
       value = gatl::utility::number::part::combine<uint16_t, int32_t>(
         slave.Registers[offset],
@@ -170,8 +187,8 @@ public:
 
     gatum::pattern::reverse(ints, count);
 
-    gatlm::two::access(binding, slave, startaddress, length);
-    gatlmd::initialize(binding, startaddress, length, offset, from, to);
+    gatlmb::two::access(binding, slave, startaddress, length);
+    gatlmbd::initialize(binding, startaddress, length, offset, from, to);
     while (from < to) {
       value = gatl::utility::number::part::combine<uint16_t, int32_t>(
         slave.Registers[offset],
@@ -203,16 +220,16 @@ public:
 
     uint8_t offset, from, to, index = 0;
 
-    gatlm::registers::assign(binding, slave, startaddress, count, from, to);
-    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    gatlmb::registers::assign(binding, slave, startaddress, count, from, to);
+    gatlmbd::initialize(binding, startaddress, count, offset, from, to);
     while (from < to) {
       EXPECT_EQ(slave.Registers[offset++], ints[from++]);
     }
 
     gatum::pattern::reverse(ints, count);
 
-    gatlm::registers::access(binding, slave, startaddress, count);
-    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    gatlmb::registers::access(binding, slave, startaddress, count);
+    gatlmbd::initialize(binding, startaddress, count, offset, from, to);
     while (from < to) {
       EXPECT_EQ(slave.Registers[offset++], ints[from++]);
     }
@@ -240,16 +257,16 @@ public:
     
     uint8_t offset, from, to, index = 0;
 
-    gatlm::coil::assign(binding, slave, startaddress, count, from, to);
-    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    gatlmb::coil::assign(binding, slave, startaddress, count, from, to);
+    gatlmbd::initialize(binding, startaddress, count, offset, from, to);
     while (from < to) {
       EXPECT_EQ(slave.Coils[offset++], bits[from++]);
     }
 
     gatum::transform(bits, count);
 
-    gatlm::coil::access(binding, slave, startaddress, count);
-    gatlmd::initialize(binding, startaddress, count, offset, from, to);
+    gatlmb::coil::access(binding, slave, startaddress, count);
+    gatlmbd::initialize(binding, startaddress, count, offset, from, to);
     while (from < to) {
       EXPECT_EQ(slave.Coils[offset++], bits[from++]);
     }
@@ -346,7 +363,7 @@ public:
         size);
       EXPECT_EQ(first + count, address);
 
-      gatl::modbus::detail::initialize(
+      gatl::modbus::binding::detail::initialize(
         binding,
         start,
         length,
@@ -368,7 +385,7 @@ public:
         size);
       EXPECT_EQ(first + count, address);
 
-      gatl::modbus::detail::initialize(
+      gatl::modbus::binding::detail::initialize(
         binding,
         start,
         length,
@@ -390,7 +407,7 @@ public:
         size);
       EXPECT_EQ(first + (count * size), address);
 
-      gatl::modbus::detail::initialize(
+      gatl::modbus::binding::detail::initialize(
         binding,
         start,
         length,
@@ -1143,6 +1160,109 @@ TEST_F(GatlModbusFixture, OnlyReadingOneRegistry) {
   gatl::binding::set< Real, uint16_t, uint8_t>(real, 0, &sensor1);
   gatl::binding::set< Real, uint16_t, uint8_t>(real, 1, &setpoint);
 
-  result = gatl::modbus::registers::access(manual, slave, 0, 1);
+  result = gatl::modbus::binding::registers::access(manual, slave, 0, 1);
   EXPECT_TRUE(result);
+}
+
+class Hanlder : public virtual ::gos::atl::modbus::Handler<> {
+public:
+  Result ReadCoils(const Function& function, const Address& address, const Length& length);
+  Result ReadHoldingRegisters(const Function& function, const Address& address, const Length& length);
+  Result ReadInputRegisters(const Function& function, const Address& address, const Length& length);
+  Result WriteCoils(const Function& function, const Address& address, const Length& length);
+  Result WriteHoldingRegisters(const Function& function, const Address& address, const Length& length);
+  Result ReadExceptionStatus(const Function& function);
+};
+
+TEST_F(GatlModbusFixture, TestSlave) {
+
+  gatlm::structures::Parameter<> parameter;
+  gatlm::structures::Variable<> variable;
+
+  Hanlder hanlder;
+  parameter.SlaveId = 1;
+  parameter.TransmissionControl = 2;
+  uint64_t micros = 418;
+  uint64_t baud = 9600;
+  uint16_t available = 93;
+  uint8_t result;
+
+  EXPECT_CALL(*arduinomock, pinMode(parameter.TransmissionControl, OUTPUT))
+    .Times(testing::Exactly(1));
+  EXPECT_CALL(*arduinomock, digitalWrite(parameter.TransmissionControl, LOW))
+    .Times(testing::AtLeast(1));
+  EXPECT_CALL(*serial, setTimeout(0)).Times(testing::AtLeast(1));
+  EXPECT_CALL(*serial, flush()).Times(testing::AtLeast(1));
+  EXPECT_CALL(*serial, availableForWrite())
+    .Times((testing::Exactly(1)))
+    .WillOnce(testing::Return(available));
+  EXPECT_CALL(*arduinomock, micros())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(micros));
+
+  gatlm::begin<>(Serial, parameter, variable, baud);
+
+  EXPECT_EQ(0, variable.Index.ResponseWrite);
+  EXPECT_EQ(0, variable.Length.TotalSent);
+  EXPECT_EQ(0, variable.Length.TotalReceived);
+  EXPECT_EQ(0, variable.Length.ResponseBuffer);
+  EXPECT_EQ(0, variable.Length.RequestBuffer);
+  EXPECT_FALSE(variable.Is.RequestBufferReading);
+  EXPECT_FALSE(variable.Is.ResponseBufferWriting);
+
+  EXPECT_EQ(available, variable.Length.TransmissionBuffer);
+  EXPECT_EQ(5000000 / baud, variable.Time.HalfChar);
+  EXPECT_EQ(micros + variable.Time.HalfChar * MODBUS_FULL_SILENCE_MULTIPLIER,
+    variable.Time.LastCommunication);
+
+  gatl::buffer::Holder<uint16_t, char> request(32);
+  gatl::buffer::Holder<uint16_t, char> response(32);
+
+  EXPECT_CALL(*serial, available())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(0));
+
+  result = gatlm::loop<>(
+    Serial,
+    parameter,
+    hanlder,
+    variable,
+    request,
+    response);
+  EXPECT_EQ(0, result);
+}
+
+Hanlder::Result Hanlder::ReadCoils(
+  const Function& function,
+  const Address& address,
+  const Length& length) {
+  return MODBUS_STATUS_OK;
+}
+
+Hanlder::Result Hanlder::ReadHoldingRegisters(
+  const Function& function,
+  const Address& address,
+  const Length& length) {
+  return MODBUS_STATUS_OK;
+}
+Hanlder::Result Hanlder::ReadInputRegisters(
+  const Function& function,
+  const Address& address,
+  const Length& length) {
+  return MODBUS_STATUS_OK;
+}
+Hanlder::Result Hanlder::WriteCoils(
+  const Function& function,
+  const Address& address,
+  const Length& length) {
+  return MODBUS_STATUS_OK;
+}
+Hanlder::Result Hanlder::WriteHoldingRegisters(
+  const Function& function,
+  const Address& address,
+  const Length& length) {
+  return MODBUS_STATUS_OK;
+}
+Hanlder::Result Hanlder::ReadExceptionStatus(const Function& function) {
+  return MODBUS_STATUS_OK;
 }

@@ -25,20 +25,16 @@ list(APPEND arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/avrage.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/buffer.cpp"
 #  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/eeprom.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/format.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/modbus.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/format.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/binding.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/utility.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/display.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/sensor.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/fixedpoints.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/format.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/median.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/sensor.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/max31865"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/max6675"
-  "${CMAKE_CURRENT_SOURCE_DIR}/tests/sort.cpp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/max6675")
 
 list(APPEND arduino_mock_for_lib_include 
   "${CMAKE_CURRENT_SOURCE_DIR}/include"
@@ -155,6 +151,8 @@ if (GOS_ARDUINO_UT_BUILD_MAX_6675)
 endif ()
 if (GOS_ARDUINO_UT_BUILD_MAX_31865)
   add_subdirectory(sublibraries/arduinomax31865)
+  list(APPEND arduino_unit_testing_src
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/max31865")
   list(APPEND arduino_testing_target_link_libraries
     libarduinomax31865)
 endif ()
@@ -168,16 +166,22 @@ if (GOS_ARDUINO_UT_BUILD_SIN_LED)
 endif ()
 if (GOS_ARDUINO_UT_BUILD_FORMAT)
   add_subdirectory(sublibraries/arduinoformat)
+  list(APPEND arduino_unit_testing_src
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/format.cpp")
   list(APPEND arduino_testing_target_link_libraries
     libarduinoformat)
 endif ()
 if (GOS_ARDUINO_UT_BUILD_MEDIAN)
   add_subdirectory(sublibraries/arduinomedian)
+  list(APPEND arduino_unit_testing_src
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/median.cpp")
   list(APPEND arduino_testing_target_link_libraries
     libarduinomedian)
 endif ()
 if (GOS_ARDUINO_UT_BUILD_SORT)
   add_subdirectory(sublibraries/arduinosort)
+  list(APPEND arduino_unit_testing_src
+    "${CMAKE_CURRENT_SOURCE_DIR}/tests/sort.cpp")
   list(APPEND arduino_testing_target_link_libraries
     libarduinosort)
 endif ()
