@@ -460,8 +460,8 @@ TEST_F(GatlPidFixture, TuneDouble) {
   EXPECT_DOUBLE_EQ(tune.Ki * times, variablea.KiTimesTime);
   EXPECT_DOUBLE_EQ(tune.Kd / times, variablea.KdDividedByTime);
   gatl::pid::TimeTune<double> tunetime;
-  tunetime.Ti = 180.0;
-  tunetime.Td = 12.0;
+  tunetime.Ti = 1000.0 * 180.0;
+  tunetime.Td = 1000.0 * 12.0;
   gatl::pid::Variable<double> variableb;
   gatl::pid::time::milliseconds::tunings(variableb, parameter, tunetime);
   EXPECT_NEAR(variablea.KiTimesTime, variableb.KiTimesTime, 0.000001);
