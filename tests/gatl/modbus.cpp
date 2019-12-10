@@ -28,6 +28,7 @@ namespace gatlmbd = ::gos::atl::modbus::binding::detail;
 
 namespace gatlunp = ::gos::atl::utility::number::part;
 
+#if USE_ARDUINO_MODBUS_SLAVE
 class GatlModbusFixture : public ::testing::Test {
 public:
   void SetUp() override {
@@ -507,7 +508,9 @@ public:
     conceptmethod2(start, length, first, count, size, offset, from, number);
   }
 };
+#endif
 
+#if USE_ARDUINO_MODBUS_SLAVE
 TEST_F(GatlModbusFixture, InitializeOneRegistry) {
   uint16_t start;       // Start address for the modbus function
   uint16_t length;      // Length for the modbus function
@@ -1266,3 +1269,5 @@ Hanlder::Result Hanlder::WriteHoldingRegisters(
 Hanlder::Result Hanlder::ReadExceptionStatus(const Function& function) {
   return MODBUS_STATUS_OK;
 }
+
+#endif
