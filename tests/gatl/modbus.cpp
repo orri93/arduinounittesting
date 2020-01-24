@@ -6,6 +6,8 @@
 #include <Arduino.h>
 
 #include <gatlmodbus.h>
+#include <gatlbuffer.h>
+
 
 #include <FixedPoints.h>
 #include <FixedPointsCommon.h>
@@ -15,6 +17,8 @@
 #include <gos/utils/memory.h>
 #include <gos/utils/binding.h>
 
+#define MODBUS_BUFFER_SIZE 64
+
 namespace gatum = ::gos::arduino::testing::utils::memory;
 namespace gatub = ::gos::arduino::testing::utils::binding;
 
@@ -23,10 +27,154 @@ namespace gatlb = ::gos::atl::binding;
 
 namespace gatl = ::gos::atl;
 namespace gatlm = ::gos::atl::modbus;
-namespace gatlmb = ::gos::atl::modbus::binding;
-namespace gatlmbd = ::gos::atl::modbus::binding::detail;
 
-namespace gatlunp = ::gos::atl::utility::number::part;
+gatl::buffer::Holder<uint16_t, char> request(MODBUS_BUFFER_SIZE);
+gatl::buffer::Holder<uint16_t, char> response(MODBUS_BUFFER_SIZE);
+
+class GatlModbusHandler : public virtual gatlm::Handler<> {
+public:
+  MODBUS_TYPE_RESULT ReadCoils(
+    const MODBUS_TYPE_FUNCTION& function,
+    const MODBUS_TYPE_DEFAULT& address,
+    const MODBUS_TYPE_DEFAULT& length);
+  MODBUS_TYPE_RESULT ReadHoldingRegisters(
+    const MODBUS_TYPE_FUNCTION& function,
+    const MODBUS_TYPE_DEFAULT& address,
+    const MODBUS_TYPE_DEFAULT& length);
+  MODBUS_TYPE_RESULT ReadInputRegisters(
+    const MODBUS_TYPE_FUNCTION& function,
+    const MODBUS_TYPE_DEFAULT& address,
+    const MODBUS_TYPE_DEFAULT& length);
+  MODBUS_TYPE_RESULT WriteCoils(
+    const MODBUS_TYPE_FUNCTION& function,
+    const MODBUS_TYPE_DEFAULT& address,
+    const MODBUS_TYPE_DEFAULT& length);
+  MODBUS_TYPE_RESULT WriteHoldingRegisters(
+    const MODBUS_TYPE_FUNCTION& function,
+    const MODBUS_TYPE_DEFAULT& address,
+    const MODBUS_TYPE_DEFAULT& length);
+  MODBUS_TYPE_RESULT ReadExceptionStatus(
+    const MODBUS_TYPE_FUNCTION& function);
+};
+
+class GatlModbusFixture : public ::testing::Test {
+public:
+  void SetUp() override {
+    arduinomock = arduinoMockInstance();
+    serial = serialMockInstance();
+  }
+
+  void TearDown() override {
+    releaseSerialMock();
+    releaseArduinoMock();
+  }
+
+  ArduinoMock* arduinomock;
+  HardwareSerialMock* serial;
+
+  std::mutex mutex;
+
+  gatlm::structures::Parameter<> parameter;
+  gatlm::structures::Variable<> variable;
+
+  const MODBUS_TYPE_RATE Rate = 9600;
+  const MODBUS_TYPE_DEFAULT Available = 93;
+  const MODBUS_TYPE_TIME Time = 666;
+
+
+  void begin() {
+    parameter.Control = 1;
+    parameter.Id = 1;
+
+    EXPECT_CALL(*arduinomock, pinMode(parameter.Control, OUTPUT))
+      .Times(testing::Exactly(1));
+
+    EXPECT_CALL(*arduinomock, digitalWrite(parameter.Control, LOW))
+      .Times(testing::Exactly(1));
+
+    EXPECT_CALL(*serial, setTimeout(0)).Times(testing::Exactly(1));
+    EXPECT_CALL(*serial, flush()).Times(testing::Exactly(1));
+    EXPECT_CALL(*serial, availableForWrite())
+      .Times(testing::Exactly(1))
+      .WillOnce(testing::Return(Available));
+
+    EXPECT_CALL(*arduinomock, micros())
+      .Times(testing::Exactly(1))
+      .WillOnce(testing::Return(Time));
+
+    gatlm::begin<>(Serial, parameter, variable, Rate);
+  }
+};
+
+TEST_F(GatlModbusFixture, Begin) {
+  begin();
+
+  EXPECT_EQ(0, variable.Index.Write);
+  EXPECT_EQ(0, variable.Length.Sent);
+  EXPECT_EQ(0, variable.Length.Received);
+  EXPECT_EQ(0, variable.Length.Response);
+  EXPECT_EQ(false, variable.Reading);
+  EXPECT_EQ(false, variable.Writing);
+
+  EXPECT_EQ(93, variable.Length.Transmission);
+
+  EXPECT_EQ(0, variable.Length.Request);
+}
+
+
+TEST_F(GatlModbusFixture, Loop) {
+
+  MODBUS_TYPE_DEFAULT result;
+
+  begin();
+
+  GatlModbusHandler handler;
+
+  EXPECT_CALL(*serial, available())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(0));
+
+  result  = gatlm::loop<>(
+    Serial, parameter, handler, variable, request, response);
+
+  EXPECT_EQ(0, result);
+
+  const uint8_t ReadCoilRequest[] = {
+    0x01, 0x01, 0x00, 0x0B, 0x00, 0x01, 0x8C, 0x08 };
+
+  EXPECT_CALL(*serial, available())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(8));
+  EXPECT_CALL(*serial, readBytes(request.Buffer, 8))
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(8));
+  ::memcpy(request.Buffer, ReadCoilRequest, 8);
+  EXPECT_CALL(*arduinomock, micros())
+    .Times(testing::Exactly(2))
+    .WillRepeatedly(testing::Return(0));
+
+  result = gatlm::loop<>(
+    Serial, parameter, handler, variable, request, response);
+  EXPECT_EQ(0, result);
+
+  EXPECT_CALL(*serial, available())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(0));
+  EXPECT_CALL(*arduinomock, micros())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(
+      1 + variable.Time.Half * MODBUS_HALF_SILENCE_MULTIPLIER));
+  result = gatlm::loop<>(
+    Serial, parameter, handler, variable, request, response);
+  EXPECT_EQ(0, result);
+
+  EXPECT_CALL(*serial, available())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(0));
+
+  result = gatlm::loop<>(
+    Serial, parameter, handler, variable, request, response);
+}
 
 #if USE_ARDUINO_MODBUS_SLAVE
 class GatlModbusFixture : public ::testing::Test {
@@ -1271,3 +1419,43 @@ Hanlder::Result Hanlder::ReadExceptionStatus(const Function& function) {
 }
 
 #endif
+
+MODBUS_TYPE_RESULT GatlModbusHandler::ReadCoils(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  return MODBUS_STATUS_OK;
+}
+
+MODBUS_TYPE_RESULT GatlModbusHandler::ReadHoldingRegisters(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  return MODBUS_STATUS_OK;
+}
+
+MODBUS_TYPE_RESULT GatlModbusHandler::ReadInputRegisters(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  return MODBUS_STATUS_OK;
+}
+
+MODBUS_TYPE_RESULT GatlModbusHandler::WriteCoils(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  return MODBUS_STATUS_OK;
+}
+
+MODBUS_TYPE_RESULT GatlModbusHandler::WriteHoldingRegisters(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  return MODBUS_STATUS_OK;
+}
+
+MODBUS_TYPE_RESULT GatlModbusHandler::ReadExceptionStatus(
+  const MODBUS_TYPE_FUNCTION& function) {
+  return MODBUS_STATUS_OK;
+}
