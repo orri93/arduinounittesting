@@ -18,6 +18,7 @@ option(GOS_ARDUINO_UT_BUILD_TICK "Build Arduino tick" ON)
 set(arduino_unit_testing_root_include "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 list(APPEND arduino_unit_testing_src
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/led.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/crc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/pid.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/sort.cpp"
