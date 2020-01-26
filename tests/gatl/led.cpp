@@ -105,7 +105,7 @@ TEST_F(GatlLedFixture, SinLoop) {
   }
 }
 
-TEST_F(GatlLedFixture, SinFullCycle) {
+TEST_F(GatlLedFixture, DISABLED_SinFullCycle) {
   std::lock_guard<std::mutex> lock(mutex);
   uint8_t output;
   const double Step = 0.1;
@@ -131,7 +131,7 @@ TEST_F(GatlLedFixture, SinFullCycle) {
   gatll::sin::full::cycle<double>(Pin, Start, Step);
 }
 
-TEST_F(GatlLedFixture, SinFullCycleCount) {
+TEST_F(GatlLedFixture, DISABLED_SinFullCycleCount) {
   std::lock_guard<std::mutex> lock(mutex);
   uint8_t output;
   const uint8_t Count = 6;
@@ -163,7 +163,7 @@ TEST_F(GatlLedFixture, SinFullCycleCount) {
   gatll::sin::full::cycle<double>(Pin, Count, Start, Step);
 }
 
-TEST_F(GatlLedFixture, SinFullCycleCountDelay) {
+TEST_F(GatlLedFixture, DISABLED_SinFullCycleCountDelay) {
   std::lock_guard<std::mutex> lock(mutex);
   uint8_t delaycount = 0;
   uint8_t output;
