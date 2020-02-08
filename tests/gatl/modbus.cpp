@@ -8,7 +8,7 @@
 #include <gatlmodbus.h>
 #include <gatlbuffer.h>
 
-#include <ModbusSlave.h>
+#include <ArduinoModbusSlave/src/ModbusSlave.h>
 
 #include <FixedPoints.h>
 #include <FixedPointsCommon.h>
@@ -88,33 +88,82 @@ public:
   const MODBUS_TYPE_DEFAULT Available = 93;
   const MODBUS_TYPE_TIME Time = 666;
 
-  void begin() {
-    parameter.Control = 1;
-    parameter.Id = 1;
-
-    EXPECT_CALL(*arduinomock, pinMode(parameter.Control, OUTPUT))
-      .Times(testing::Exactly(1));
-
-    EXPECT_CALL(*arduinomock, digitalWrite(parameter.Control, LOW))
-      .Times(testing::Exactly(1));
-
-    EXPECT_CALL(*serial, setTimeout(0)).Times(testing::Exactly(1));
-    EXPECT_CALL(*serial, flush()).Times(testing::Exactly(1));
-    EXPECT_CALL(*serial, availableForWrite())
-      .Times(testing::Exactly(1))
-      .WillOnce(testing::Return(Available));
-
-    EXPECT_CALL(*arduinomock, micros())
-      .Times(testing::Exactly(1))
-      .WillOnce(testing::Return(Time));
-
-    gatlm::begin<>(Serial, parameter, variable, Rate);
-  }
+  void begin();
+  void crc(const uint8_t* buffer, const uint16_t& length, const uint16_t& crc);
+  uint16_t swap(const uint16_t& value);
 };
+
+#define CRC_TEST_TEXT "Abc123"
+
+void GatlModbusFixture::begin() {
+  parameter.Control = 1;
+  parameter.Id = 1;
+
+  EXPECT_CALL(*arduinomock, pinMode(parameter.Control, OUTPUT))
+    .Times(testing::Exactly(1));
+
+  EXPECT_CALL(*arduinomock, digitalWrite(parameter.Control, LOW))
+    .Times(testing::Exactly(1));
+
+  EXPECT_CALL(*serial, setTimeout(0)).Times(testing::Exactly(1));
+  EXPECT_CALL(*serial, flush()).Times(testing::Exactly(1));
+  EXPECT_CALL(*serial, availableForWrite())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(Available));
+
+  EXPECT_CALL(*arduinomock, micros())
+    .Times(testing::Exactly(1))
+    .WillOnce(testing::Return(Time));
+
+  gatlm::begin<>(Serial, parameter, variable, Rate);
+}
+
+void GatlModbusFixture::crc(
+  const uint8_t* buffer,
+  const uint16_t& length,
+  const uint16_t& crc) {
+  uint16_t swapedcrc = swap(crc);
+  ModbusAccess ma;
+  uint16_t crcams = ma.CalculateCrc(
+    const_cast<uint8_t*>(buffer),
+    length);
+  gatl::buffer::Holder<uint16_t, char> holder(length);
+  ::memcpy(holder.Buffer, buffer, length);
+  uint16_t gatlmcrc = gatlm::details::crc::calculate<uint16_t>(
+    holder, length);
+  EXPECT_EQ(swapedcrc, crcams);
+  EXPECT_EQ(swapedcrc, gatlmcrc);
+}
+
+uint16_t GatlModbusFixture::swap(const uint16_t& value) {
+  uint8_t fb = value & 0xff;
+  uint8_t sb = value >> 8;
+
+  uint16_t word = static_cast<uint16_t>(fb) << 8;
+  word |= sb;
+
+  return word;
+}
 
 TEST_F(GatlModbusFixture, CRC) {
   ModbusAccess ma;
-  ma.CalculateCrc();
+  char* text = const_cast<char*>(CRC_TEST_TEXT);
+  uint8_t* buffer = reinterpret_cast<uint8_t*>(text);
+  uint16_t crcams = ma.CalculateCrc(buffer, sizeof(CRC_TEST_TEXT));
+
+  gatl::buffer::Holder<uint16_t, char> holder(
+    CRC_TEST_TEXT, sizeof(CRC_TEST_TEXT));
+
+  uint16_t gatlmcrc = gatlm::details::crc::calculate<uint16_t>(
+    holder, sizeof(CRC_TEST_TEXT));
+
+  EXPECT_EQ(crcams, gatlmcrc);
+
+  const uint8_t bytebuffera[] = { 0x01, 0x01, 0x00, 0x00, 0x00, 0x01 };
+  crc(bytebuffera, 6, 0xfdca);
+
+  const uint8_t bytebufferb[] = { 0x01, 0x01, 0x01, 0x00 };
+  crc(bytebuffera, 4, 0x5188);
 }
 
 TEST_F(GatlModbusFixture, Begin) {

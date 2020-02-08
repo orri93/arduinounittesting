@@ -51,6 +51,7 @@ set(arduino_unit_testing_sublibraries_dir
 list(APPEND arduino_mock_include
   "${arduino_mock_for_lib_include}"
   "${CMAKE_CURRENT_SOURCE_DIR}/include/mock"
+  "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/cnl/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/fixed_point/include"
   "${CMAKE_CURRENT_SOURCE_DIR}/extern/libraries/FixedPointsArduino/src"
