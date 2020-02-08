@@ -163,15 +163,13 @@ TEST_F(GatlModbusFixture, CRC) {
   crc(bytebuffera, 6, 0xfdca);
 
   const uint8_t bytebufferb[] = { 0x01, 0x01, 0x01, 0x00 };
-  crc(bytebuffera, 4, 0x5188);
+  crc(bytebufferb, 4, 0x5188);
 }
 
 TEST_F(GatlModbusFixture, Begin) {
   begin();
 
   EXPECT_EQ(0, variable.Index.Write);
-  EXPECT_EQ(0, variable.Length.Sent);
-  EXPECT_EQ(0, variable.Length.Received);
   EXPECT_EQ(0, variable.Length.Response);
   EXPECT_EQ(false, variable.Reading);
   EXPECT_EQ(false, variable.Writing);
