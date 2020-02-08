@@ -8,6 +8,7 @@
 #include <gatlmodbus.h>
 #include <gatlbuffer.h>
 
+#include <ModbusSlave.h>
 
 #include <FixedPoints.h>
 #include <FixedPointsCommon.h>
@@ -30,6 +31,12 @@ namespace gatlm = ::gos::atl::modbus;
 
 gatl::buffer::Holder<uint16_t, char> request(MODBUS_BUFFER_SIZE);
 gatl::buffer::Holder<uint16_t, char> response(MODBUS_BUFFER_SIZE);
+
+class ModbusAccess : public Modbus {
+public:
+  ModbusAccess();
+  uint16_t CalculateCrc(uint8_t* buffer, int length);
+};
 
 class GatlModbusHandler : public virtual gatlm::Handler<> {
 public:
@@ -81,7 +88,6 @@ public:
   const MODBUS_TYPE_DEFAULT Available = 93;
   const MODBUS_TYPE_TIME Time = 666;
 
-
   void begin() {
     parameter.Control = 1;
     parameter.Id = 1;
@@ -105,6 +111,11 @@ public:
     gatlm::begin<>(Serial, parameter, variable, Rate);
   }
 };
+
+TEST_F(GatlModbusFixture, CRC) {
+  ModbusAccess ma;
+  ma.CalculateCrc();
+}
 
 TEST_F(GatlModbusFixture, Begin) {
   begin();
@@ -1458,4 +1469,12 @@ MODBUS_TYPE_RESULT GatlModbusHandler::WriteHoldingRegisters(
 MODBUS_TYPE_RESULT GatlModbusHandler::ReadExceptionStatus(
   const MODBUS_TYPE_FUNCTION& function) {
   return MODBUS_STATUS_OK;
+}
+
+
+ModbusAccess::ModbusAccess() : Modbus(Serial) {
+}
+
+uint16_t ModbusAccess::CalculateCrc(uint8_t* buffer, int length) {
+  return calculateCRC(buffer, length);
 }
