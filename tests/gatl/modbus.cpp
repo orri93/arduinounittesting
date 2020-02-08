@@ -29,8 +29,8 @@ namespace gatlb = ::gos::atl::binding;
 namespace gatl = ::gos::atl;
 namespace gatlm = ::gos::atl::modbus;
 
-gatl::buffer::Holder<uint16_t, char> request(MODBUS_BUFFER_SIZE);
-gatl::buffer::Holder<uint16_t, char> response(MODBUS_BUFFER_SIZE);
+gatl::buffer::Holder<uint16_t, MODBUS_TYPE_BUFFER> request(MODBUS_BUFFER_SIZE);
+gatl::buffer::Holder<uint16_t, MODBUS_TYPE_BUFFER> response(MODBUS_BUFFER_SIZE);
 
 class ModbusAccess : public Modbus {
 public:
@@ -127,7 +127,7 @@ void GatlModbusFixture::crc(
   uint16_t crcams = ma.CalculateCrc(
     const_cast<uint8_t*>(buffer),
     length);
-  gatl::buffer::Holder<uint16_t, char> holder(length);
+  gatl::buffer::Holder<uint16_t, MODBUS_TYPE_BUFFER> holder(length);
   ::memcpy(holder.Buffer, buffer, length);
   uint16_t gatlmcrc = gatlm::details::crc::calculate<uint16_t>(
     holder, length);
@@ -151,8 +151,8 @@ TEST_F(GatlModbusFixture, CRC) {
   uint8_t* buffer = reinterpret_cast<uint8_t*>(text);
   uint16_t crcams = ma.CalculateCrc(buffer, sizeof(CRC_TEST_TEXT));
 
-  gatl::buffer::Holder<uint16_t, char> holder(
-    CRC_TEST_TEXT, sizeof(CRC_TEST_TEXT));
+  gatl::buffer::Holder<uint16_t, MODBUS_TYPE_BUFFER> holder(
+    buffer, sizeof(CRC_TEST_TEXT));
 
   uint16_t gatlmcrc = gatlm::details::crc::calculate<uint16_t>(
     holder, sizeof(CRC_TEST_TEXT));
