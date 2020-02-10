@@ -43,6 +43,23 @@ TEST(GatlBufferTest, Construct) {
   EXPECT_EQ(32, buffer.Size);
 }
 
+TEST(GatlBufferTest, Clear) {
+  uint64_t s;
+  CharBuffer buffer(32);
+  
+  gab::clear(buffer);
+  s = sum(buffer);
+  EXPECT_EQ(0, s);
+
+  ::memcpy(buffer.Buffer, TEST_BUFFER, sizeof(TEST_BUFFER));
+  s = sum(buffer);
+  EXPECT_EQ(1557, s);
+
+  gab::clear(buffer);
+  s = sum(buffer);
+  EXPECT_EQ(0, s);
+}
+
 TEST(GatlBufferTest, Read) {
   uint64_t s;
   uint16_t w, crc;
