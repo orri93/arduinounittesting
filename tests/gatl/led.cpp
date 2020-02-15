@@ -6,7 +6,7 @@
 
 #include <Arduino.h>
 
-#include <gatled.h>
+#include <gatlled.h>
 
 namespace gatll = ::gos::atl::led;
 
