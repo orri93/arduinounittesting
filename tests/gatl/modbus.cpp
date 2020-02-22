@@ -38,6 +38,7 @@ public:
   uint16_t CalculateCrc(uint8_t* buffer, int length);
 };
 
+#ifdef MODBUS_HANDLER_INTERFACE
 class GatlModbusHandler : public virtual gatlm::Handler<> {
 public:
   GatlModbusHandler();
@@ -67,7 +68,54 @@ public:
   int writeholdingregisterscount;
   int readexceptionstatuscount;
 };
+#else
+namespace callback {
+namespace read {
+static int count = 0;
+static MODBUS_TYPE_RESULT coils(
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length);
+namespace discrete {
+static int count = 0;
+static MODBUS_TYPE_RESULT inputs(
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length);
+}
+namespace holding {
+static int count = 0;
+static MODBUS_TYPE_RESULT registers(
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length);
+}
+namespace input {
+static int count = 0;
+static MODBUS_TYPE_RESULT registers(
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length);
+}
+namespace exception {
+static int count = 0;
+static MODBUS_TYPE_RESULT status();
+}
+}
+namespace write {
+static int count = 0;
+static MODBUS_TYPE_RESULT coils(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length);
+namespace holding {
+static int count = 0;
+static MODBUS_TYPE_RESULT registers(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length);
+}
+}
+}
+#endif
 
+#ifdef MODBUS_HANDLER_INTERFACE
 GatlModbusHandler::GatlModbusHandler() :
   readcoilscount(0),
   readholdingregisterscount(0),
@@ -76,6 +124,7 @@ GatlModbusHandler::GatlModbusHandler() :
   writeholdingregisterscount(0),
   readexceptionstatuscount(0) {
 }
+#endif
 
 class GatlModbusFixture : public ::testing::Test {
 public:
@@ -219,14 +268,20 @@ TEST_F(GatlModbusFixture, Loop) {
 
   begin(3, 5);
 
+#ifdef MODBUS_HANDLER_INTERFACE
   GatlModbusHandler handler;
+#endif
 
   EXPECT_CALL(*serial, available())
     .Times(testing::Exactly(1))
     .WillOnce(testing::Return(0));
 
+#ifdef MODBUS_HANDLER_INTERFACE
   result  = gatlm::loop<>(
     Serial, parameter, handler, variable, request, response);
+#else
+  result = gatlm::loop<>(Serial, parameter, variable, request, response);
+#endif
 
   EXPECT_EQ(0, result);
 
@@ -244,8 +299,12 @@ TEST_F(GatlModbusFixture, Loop) {
     .Times(testing::Exactly(2))
     .WillRepeatedly(testing::Return(0));
 
+#ifdef MODBUS_HANDLER_INTERFACE
   result = gatlm::loop<>(
     Serial, parameter, handler, variable, request, response);
+#else
+  result = gatlm::loop<>(Serial, parameter, variable, request, response);
+#endif
   EXPECT_EQ(0, result);
 
   EXPECT_CALL(*serial, available())
@@ -260,12 +319,20 @@ TEST_F(GatlModbusFixture, Loop) {
   EXPECT_CALL(*serial, write(response.Buffer, 6))
     .Times(testing::Exactly(2));
 
+#ifdef MODBUS_HANDLER_INTERFACE
   result = gatlm::loop<>(
     Serial, parameter, handler, variable, request, response);
+#else
+  result = gatlm::loop<>(Serial, parameter, variable, request, response);
+#endif
   EXPECT_EQ(0, result);
 
+#ifdef MODBUS_HANDLER_INTERFACE
   result = gatlm::loop<>(
     Serial, parameter, handler, variable, request, response);
+#else
+  result = gatlm::loop<>(Serial, parameter, variable, request, response);
+#endif
 }
 
 TEST_F(GatlModbusFixture, ProvideDigitalIndex) {
@@ -1188,6 +1255,8 @@ TEST_F(GatlModbusFixture, ProvideString) {
 
 }
 
+#ifdef MODBUS_HANDLER_INTERFACE
+
 MODBUS_TYPE_RESULT GatlModbusHandler::ReadCoils(
   const MODBUS_TYPE_DEFAULT& address,
   const MODBUS_TYPE_DEFAULT& length) {
@@ -1229,6 +1298,66 @@ MODBUS_TYPE_RESULT GatlModbusHandler::ReadExceptionStatus() {
   ++readexceptionstatuscount;
   return MODBUS_STATUS_OK;
 }
+#else
+namespace callback {
+namespace read {
+MODBUS_TYPE_RESULT coils(
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  ++count;
+  return MODBUS_STATUS_OK;
+}
+namespace discrete {
+static MODBUS_TYPE_RESULT inputs(
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  ++count;
+  return MODBUS_STATUS_OK;
+}
+}
+namespace holding {
+static MODBUS_TYPE_RESULT registers(
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  ++count;
+  return MODBUS_STATUS_OK;
+}
+}
+namespace input {
+static MODBUS_TYPE_RESULT registers(
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  ++count;
+  return MODBUS_STATUS_OK;
+}
+}
+namespace exception {
+static MODBUS_TYPE_RESULT status() {
+  ++count;
+  return MODBUS_STATUS_OK;
+}
+}
+}
+namespace write {
+static MODBUS_TYPE_RESULT coils(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  ++count;
+  return MODBUS_STATUS_OK;
+}
+namespace holding {
+static MODBUS_TYPE_RESULT registers(
+  const MODBUS_TYPE_FUNCTION& function,
+  const MODBUS_TYPE_DEFAULT& address,
+  const MODBUS_TYPE_DEFAULT& length) {
+  ++count;
+  return MODBUS_STATUS_OK;
+}
+}
+}
+}
+#endif
 
 ModbusAccess::ModbusAccess() : Modbus(Serial) {
 }
