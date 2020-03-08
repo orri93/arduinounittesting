@@ -11,50 +11,219 @@
 
 namespace fp = ::FixedPoints;
 namespace gatl = ::gos::atl;
+namespace gatlu = ::gos::atl::utility;
 
-TEST(GatlUtilTest, RangeIsInside) {
-  uint16_t value, size, start, length;
+TEST(GatlUtilTest, RangeInclusiveIsInside) {
+  uint16_t value, size, lowest, highest;
   bool result;
 
-  value = 5; size = 2; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, size, start, length); EXPECT_FALSE(result);
-
-}
-
-TEST(GatlUtilTest, RangeIsMemberOf) {
-  uint16_t value, size, start, length;
-  bool result;
-
-  value = 5; size = 2; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, size, start, length);
+  value = 5; size = 2; lowest = 10; highest = 15;
+  result = gatlu::range::inclusive::isinside(value, size, lowest, highest);
   EXPECT_FALSE(result);
 
+  value = 9; size = 2; lowest = 10; highest = 15;
+  result = gatlu::range::inclusive::isinside(value, size, lowest, highest);
+  EXPECT_FALSE(result);
+
+  value = 10; size = 2; lowest = 10; highest = 15;
+  result = gatlu::range::inclusive::isinside(value, size, lowest, highest);
+  EXPECT_TRUE(result);
+
+  value = 12; size = 2; lowest = 10; highest = 15;
+  result = gatlu::range::inclusive::isinside(value, size, lowest, highest);
+  EXPECT_TRUE(result);
+
+  value = 14; size = 2; lowest = 10; highest = 15;
+  result = gatlu::range::inclusive::isinside(value, size, lowest, highest);
+  EXPECT_FALSE(result);
+
+  value = 15; size = 2; lowest = 10; highest = 15;
+  result = gatlu::range::inclusive::isinside(value, size, lowest, highest);
+  EXPECT_FALSE(result);
+
+  value = 20; size = 2; lowest = 10; highest = 15;
+  result = gatlu::range::inclusive::isinside(value, size, lowest, highest);
+  EXPECT_FALSE(result);
+
+
+  value = 5; lowest = 10; highest = 15;
+  result = gatl::utility::range::inclusive::isinside(value, lowest, highest);
+  EXPECT_FALSE(result);
+
+  value = 9; lowest = 10; highest = 15;
+  result = gatl::utility::range::inclusive::isinside(value, lowest, highest);
+  EXPECT_FALSE(result);
+
+  value = 10; lowest = 10; highest = 15;
+  result = gatl::utility::range::inclusive::isinside(value, lowest, highest);
+  EXPECT_TRUE(result);
+
+  value = 12; lowest = 10; highest = 15;
+  result = gatl::utility::range::inclusive::isinside(value, lowest, highest);
+  EXPECT_TRUE(result);
+
+  value = 14; lowest = 10; highest = 15;
+  result = gatl::utility::range::inclusive::isinside(value, lowest, highest);
+  EXPECT_TRUE(result);
+
+  value = 15; lowest = 10; highest = 15;
+  result = gatl::utility::range::inclusive::isinside(value, lowest, highest);
+  EXPECT_TRUE(result);
+
+  value = 20; lowest = 10; highest = 15;
+  result = gatl::utility::range::inclusive::isinside(value, lowest, highest);
+  EXPECT_FALSE(result);
+}
+
+TEST(GatlUtilTest, RangeInclusiveIsMemberOf) {
+  uint16_t value, size, start, length;
+  bool result;
+
+  value = 5; size = 2; start = 10; length = 5;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 9; size = 2; start = 10; length = 5;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 10; size = 2; start = 10; length = 5;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_TRUE(result);
+
+  value = 12; size = 2; start = 10; length = 5;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_TRUE(result);
+
+  value = 14; size = 2; start = 10; length = 5;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 15; size = 2; start = 10; length = 5;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 20; size = 2; start = 10; length = 5;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 0; size = 2; start = 0; length = 1;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 0; size = 2; start = 0; length = 2;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_TRUE(result);
+
+  value = 0; size = 2; start = 1; length = 2;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 2; size = 2; start = 0; length = 3;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 2; size = 2; start = 0; length = 4;
+  result = gatlu::range::inclusive::ismemberof(value, size, start, length);
+  EXPECT_TRUE(result);
+
+
   value = 5; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, start, length);
+  result = gatl::utility::range::inclusive::ismemberof(value, start, length);
   EXPECT_FALSE(result);
 
   value = 9; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, start, length);
+  result = gatl::utility::range::inclusive::ismemberof(value, start, length);
   EXPECT_FALSE(result);
 
   value = 10; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, start, length);
+  result = gatl::utility::range::inclusive::ismemberof(value, start, length);
   EXPECT_TRUE(result);
 
   value = 12; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, start, length);
+  result = gatl::utility::range::inclusive::ismemberof(value, start, length);
   EXPECT_TRUE(result);
-  
+
   value = 14; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, start, length);
+  result = gatl::utility::range::inclusive::ismemberof(value, start, length);
   EXPECT_TRUE(result);
 
   value = 15; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, start, length);
+  result = gatl::utility::range::inclusive::ismemberof(value, start, length);
+  EXPECT_TRUE(result);
+
+  value = 20; start = 10; length = 5;
+  result = gatl::utility::range::inclusive::ismemberof(value, start, length);
+  EXPECT_FALSE(result);
+}
+
+
+TEST(GatlUtilTest, RangeExclusiveIsMemberOf) {
+  uint16_t value, size, start, length;
+  bool result;
+
+  value = 5; size = 2; start = 10; length = 5;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 9; size = 2; start = 10; length = 5;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 10; size = 2; start = 10; length = 5;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_TRUE(result);
+
+  value = 12; size = 2; start = 10; length = 5;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_TRUE(result);
+
+  value = 14; size = 2; start = 10; length = 5;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 15; size = 2; start = 10; length = 5;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 20; size = 2; start = 10; length = 5;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 0; size = 2; start = 0; length = 1;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 0; size = 2; start = 0; length = 2;
+  result = gatlu::range::exclusive::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
+
+  value = 5; start = 10; length = 5;
+  result = gatl::utility::range::exclusive::ismemberof(value, start, length);
+  EXPECT_FALSE(result);
+
+  value = 9; start = 10; length = 5;
+  result = gatl::utility::range::exclusive::ismemberof(value, start, length);
+  EXPECT_FALSE(result);
+
+  value = 10; start = 10; length = 5;
+  result = gatl::utility::range::exclusive::ismemberof(value, start, length);
+  EXPECT_TRUE(result);
+
+  value = 12; start = 10; length = 5;
+  result = gatl::utility::range::exclusive::ismemberof(value, start, length);
+  EXPECT_TRUE(result);
+  
+  value = 14; start = 10; length = 5;
+  result = gatl::utility::range::exclusive::ismemberof(value, start, length);
+  EXPECT_TRUE(result);
+
+  value = 15; start = 10; length = 5;
+  result = gatl::utility::range::exclusive::ismemberof(value, start, length);
   EXPECT_FALSE(result);
 
   value = 20; start = 10; length = 5;
-  result = gatl::utility::range::ismemberof(value, start, length);
+  result = gatl::utility::range::exclusive::ismemberof(value, start, length);
   EXPECT_FALSE(result);
 }
 
