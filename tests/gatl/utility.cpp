@@ -12,9 +12,22 @@
 namespace fp = ::FixedPoints;
 namespace gatl = ::gos::atl;
 
-TEST(GatlUtilTest, RangeIsMemberOf) {
-  uint16_t value, start, length;
+TEST(GatlUtilTest, RangeIsInside) {
+  uint16_t value, size, start, length;
   bool result;
+
+  value = 5; size = 2; start = 10; length = 5;
+  result = gatl::utility::range::ismemberof(value, size, start, length); EXPECT_FALSE(result);
+
+}
+
+TEST(GatlUtilTest, RangeIsMemberOf) {
+  uint16_t value, size, start, length;
+  bool result;
+
+  value = 5; size = 2; start = 10; length = 5;
+  result = gatl::utility::range::ismemberof(value, size, start, length);
+  EXPECT_FALSE(result);
 
   value = 5; start = 10; length = 5;
   result = gatl::utility::range::ismemberof(value, start, length);
