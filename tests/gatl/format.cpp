@@ -112,6 +112,52 @@ TEST(GatlFormatTest, Format) {
   gatl::format::integer(buffer, integer, &id, &unit, GOS_ARDUINO_TEMPLATE_LIBRARY_WIDTH_FILL_NEGATIVE);
   EXPECT_STREQ("A:666    C", buffer.Buffer);
 
+  integer = -93;
+  checkresult = gatl::format::check::integer(
+    buffer,
+    integer,
+    &id,
+    &unit,
+    GOS_ARDUINO_TEMPLATE_LIBRARY_WIDTH_UNDEFINED);
+  EXPECT_TRUE(checkresult);
+  gatl::format::integer(
+    buffer,
+    integer,
+    &id,
+    &unit,
+    GOS_ARDUINO_TEMPLATE_LIBRARY_WIDTH_UNDEFINED);
+  EXPECT_STREQ("A:-93 C", buffer.Buffer);
+
+  checkresult = gatl::format::check::integer(buffer, integer, &id, &unit, 6);
+  EXPECT_TRUE(checkresult);
+  gatl::format::integer(buffer, integer, &id, &unit, 6);
+  EXPECT_STREQ("A:   -93 C", buffer.Buffer);
+
+  checkresult = gatl::format::check::integer<int, uint8_t>(buffer, integer, &id, nullptr, 6);
+  EXPECT_TRUE(checkresult);
+  gatl::format::integer<int, uint8_t>(buffer, integer, &id, nullptr, 6);
+  EXPECT_STREQ("A:   -93", buffer.Buffer);
+
+  checkresult = gatl::format::check::integer<int, uint8_t>(buffer, integer, nullptr, nullptr, 6);
+  EXPECT_TRUE(checkresult);
+  gatl::format::integer<int, uint8_t>(buffer, integer, nullptr, nullptr, 6);
+  EXPECT_STREQ("   -93", buffer.Buffer);
+
+  checkresult = gatl::format::check::integer(buffer, integer, &id, &unit);
+  EXPECT_TRUE(checkresult);
+  gatl::format::integer(buffer, integer, &id, &unit);
+  EXPECT_STREQ("A:   -93 C", buffer.Buffer);
+
+  checkresult = gatl::format::check::integer(buffer, integer);
+  EXPECT_TRUE(checkresult);
+  gatl::format::integer(buffer, integer);
+  EXPECT_STREQ("       -93", buffer.Buffer);
+
+  checkresult = gatl::format::check::integer(buffer, integer, &id, &unit, GOS_ARDUINO_TEMPLATE_LIBRARY_WIDTH_FILL_NEGATIVE);
+  EXPECT_TRUE(checkresult);
+  gatl::format::integer(buffer, integer, &id, &unit, GOS_ARDUINO_TEMPLATE_LIBRARY_WIDTH_FILL_NEGATIVE);
+  EXPECT_STREQ("A:-93    C", buffer.Buffer);
+
   gatl::format::message(buffer, TEXT_ERROR, sizeof(TEXT_ERROR), &id);
   EXPECT_STREQ("A:Failure", buffer.Buffer);
 
