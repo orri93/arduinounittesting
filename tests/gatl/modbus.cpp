@@ -262,7 +262,7 @@ TEST_F(GatlModbusFixture, Begin) {
   EXPECT_EQ(0, variable.Length.Request);
 }
 
-TEST_F(GatlModbusFixture, Loop) {
+TEST_F(GatlModbusFixture, DISABLED_Loop) {
 
   MODBUS_TYPE_DEFAULT result;
 
@@ -1253,6 +1253,111 @@ TEST_F(GatlModbusFixture, ProvideString) {
     length);
   EXPECT_EQ(MODBUS_STATUS_ILLEGAL_DATA_ADDRESS, result);
 
+}
+
+TEST_F(GatlModbusFixture, AccessBufferLocation) {
+  MODBUS_TYPE_LOCATION location;
+  MODBUS_TYPE_DEFAULT address, size, length;
+  MODBUS_TYPE_BUFFER* pointer;
+  uint64_t expected, result;
+ 
+  gatl::buffer::clear(request);
+
+  variable.Length.Request = 16;
+
+  request.Buffer[MODBUS_FUNCTION_CODE_INDEX] = MODBUS_FC_WRITE_REGISTER;
+
+  location = 0; address = 0;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, address);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 2);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+  location = 1; address = 1;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, address);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 2);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+  request.Buffer[MODBUS_FUNCTION_CODE_INDEX] =
+    MODBUS_FC_WRITE_MULTIPLE_REGISTERS;
+
+  location = 0; address = 0;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, address);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 5);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+  location = 1; address = 1;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, address);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 5);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+  location = 1; address = 0;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, address);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 7);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+  location = 0; address = 1;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, address);
+  EXPECT_TRUE(pointer == nullptr);
+
+
+  request.Buffer[MODBUS_FUNCTION_CODE_INDEX] = MODBUS_FC_WRITE_REGISTER;
+
+  location = 0; address = 0; size = 1; length = 1;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, size, address, length);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 2);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+  location = 1; address = 1; size = 1; length = 1;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, size, address, length);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 2);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+
+  request.Buffer[MODBUS_FUNCTION_CODE_INDEX] =
+    MODBUS_FC_WRITE_MULTIPLE_REGISTERS;
+
+  location = 0; address = 0; size = 1; length = 1;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, size, address, length);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 5);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+  location = 2; address = 1; size = 1; length = 2;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, size, address, length);
+  expected = reinterpret_cast<uint64_t>(request.Buffer + MODBUS_DATA_INDEX + 7);
+  result = reinterpret_cast<uint64_t>(pointer);
+  EXPECT_FALSE(pointer == nullptr);
+  EXPECT_EQ(expected, result);
+
+  location = 2; address = 1; size = 2; length = 2;
+  pointer = gatl::modbus::access::buffer::location<MODBUS_TYPE_DEFAULT>(
+    variable, request, location, size, address, length);
+  EXPECT_TRUE(pointer == nullptr);
 }
 
 #ifdef MODBUS_HANDLER_INTERFACE

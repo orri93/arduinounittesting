@@ -12,10 +12,10 @@ namespace gatl = ::gos::atl;
 template<typename T = double>
 class TestSensor : public gatl::Sensor<T> {
 public:
-  gatl::Sensor<T>::Status measure() {
+  gatl::sensor::Status measure() {
     Value = 93.0;
     Code = 11;
-    return gatl::Sensor<T>::Status::Operational;
+    return gatl::sensor::Status::Operational;
   }
   const char* error(uint8_t& length) {
     return nullptr;
@@ -46,12 +46,12 @@ public:
     max31865.initialize(rtdtype_, wires_);
   }
 
-  gatl::Sensor<double>::Status measure() {
+  gatl::sensor::Status measure() {
     if (max31865.read(Value)) {
       return gatl::Sensor<double>::check();
     } else {
       Code = max31865.Status;
-      return gatl::Sensor<double>::Status::Fault;
+      return gatl::sensor::Status::Fault;
     }
   }
 
@@ -67,8 +67,8 @@ private:
 
 TEST(GatlSensorTest, SingleSensor) {
   TestSensor<> sensor;
-  TestSensor<>::Status status = sensor.measure();
-  EXPECT_EQ(TestSensor<>::Status::Operational, status);
+  gatl::sensor::Status status = sensor.measure();
+  EXPECT_EQ(gatl::sensor::Status::Operational, status);
   double value = sensor.Value;
   EXPECT_DOUBLE_EQ(93.0, value);
   uint8_t code = sensor.Code;
@@ -80,8 +80,8 @@ TEST(GatlSensorTest, SensorArray) {
   //SensorPointer pointer[2];
 
   TestSensor<> sensor;
-  TestSensor<>::Status status = sensor.measure();
-  EXPECT_EQ(TestSensor<>::Status::Operational, status);
+  gatl::sensor::Status status = sensor.measure();
+  EXPECT_EQ(gatl::sensor::Status::Operational, status);
   double value = sensor.Value;
   EXPECT_DOUBLE_EQ(93.0, value);
   uint8_t code = sensor.Code;
