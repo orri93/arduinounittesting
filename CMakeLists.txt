@@ -21,6 +21,7 @@ list(APPEND arduino_unit_testing_src
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/led.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/crc.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/pid.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/pid2.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/sort.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/type.cpp"
   "${CMAKE_CURRENT_SOURCE_DIR}/tests/gatl/avrage.cpp"
